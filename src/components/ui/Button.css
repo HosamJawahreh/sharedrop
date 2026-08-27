@@ -1,0 +1,54 @@
+.sd-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sd-button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, white);
+  outline-offset: 3px;
+}
+
+.sd-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sd-button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.sd-button--primary {
+  width: min(100%, 20rem);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.sd-button--primary:not(:disabled):hover {
+  background: var(--color-accent-strong);
+}
+
+.sd-button--ghost {
+  color: var(--color-text-muted);
+  background: transparent;
+}
+
+.sd-button--ghost:not(:disabled):hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}

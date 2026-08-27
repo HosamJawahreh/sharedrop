@@ -1,0 +1,64 @@
+:root {
+  --font-display: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-body: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+  --color-bg: #e7eef2;
+  --color-bg-deep: #d5e2e9;
+  --color-surface: #f4f8fa;
+  --color-brand: #0b3d4a;
+  --color-accent: #147a6d;
+  --color-accent-strong: #0f655a;
+  --color-on-accent: #f7fffd;
+  --color-text: #122126;
+  --color-text-muted: #5b6c73;
+  --color-glow: #9fd6cf;
+  --color-glow-soft: #b7cfe0;
+
+  color: var(--color-text);
+  background: linear-gradient(165deg, var(--color-bg) 0%, var(--color-bg-deep) 55%, #c9d8e2 100%);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

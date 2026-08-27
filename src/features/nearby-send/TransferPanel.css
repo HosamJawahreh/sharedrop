@@ -1,0 +1,187 @@
+.transfer-panel {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.transfer-panel__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.transfer-panel__picker {
+  min-height: 3rem;
+  font-size: 1.05rem;
+}
+
+.transfer-panel__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.transfer-panel__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.transfer-panel__status {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.transfer-panel__status--success {
+  color: var(--color-brand);
+}
+
+.transfer-panel__status--error {
+  color: #c0392b;
+}
+
+.transfer-panel__summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.transfer-panel__file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.transfer-panel__file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.transfer-panel__file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.transfer-panel__filename {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transfer-panel__filesize {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.transfer-panel__remove {
+  flex-shrink: 0;
+  min-height: 2.25rem;
+  padding-inline: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.transfer-panel__total {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.transfer-panel__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.transfer-panel__action {
+  min-height: 2.75rem;
+}
+
+.transfer-panel__drop-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.transfer-panel--dragging {
+  outline: 2px dashed color-mix(in srgb, var(--color-accent) 55%, transparent);
+  outline-offset: 4px;
+  border-radius: 1rem;
+}
+
+.transfer-panel__file-index {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--color-brand);
+}
+
+.transfer-panel--select {
+  position: relative;
+}
+
+.transfer-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.transfer-progress__track {
+  flex: 1;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.transfer-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 120ms linear;
+}
+
+.transfer-progress__label {
+  flex-shrink: 0;
+  min-width: 2.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transfer-progress__fill {
+    transition: none;
+  }
+}

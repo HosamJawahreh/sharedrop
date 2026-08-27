@@ -1,0 +1,38 @@
+.connection-diagnostics {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed color-mix(in srgb, var(--color-brand) 18%, transparent);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--color-surface) 75%, white);
+  font-size: 0.78rem;
+}
+
+.connection-diagnostics__title {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.connection-diagnostics__list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.connection-diagnostics__list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.connection-diagnostics__list dt {
+  color: var(--color-text-muted);
+}
+
+.connection-diagnostics__list dd {
+  margin: 0;
+  color: var(--color-brand);
+  font-weight: 600;
+}

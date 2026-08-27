@@ -1,0 +1,127 @@
+.device-settings {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: end center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: color-mix(in srgb, #0b3d4a 35%, transparent);
+}
+
+.device-settings__panel {
+  width: min(100%, 26rem);
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: 1.25rem 1.25rem 0.75rem 0.75rem;
+  background: var(--color-surface);
+  box-shadow: 0 -8px 32px color-mix(in srgb, var(--color-brand) 18%, transparent);
+  animation: device-settings-rise 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.device-settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.device-settings__title {
+  margin: 0;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.device-settings__hint {
+  margin: 0.65rem 0 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.device-settings__form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.device-settings__label {
+  color: var(--color-brand);
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.device-settings__input {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--color-brand) 18%, transparent);
+  border-radius: 0.85rem;
+  color: inherit;
+  background: color-mix(in srgb, var(--color-surface) 70%, white);
+  font: inherit;
+}
+
+.device-settings__input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, white);
+  outline-offset: 2px;
+}
+
+.device-settings__error {
+  margin: 0;
+  color: #9b2c2c;
+  font-size: 0.9rem;
+}
+
+.device-settings__ok {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.9rem;
+}
+
+.device-settings__save {
+  margin-top: 0.35rem;
+}
+
+.device-settings__this {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.device-settings__this-label {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.device-settings__this-name {
+  color: var(--color-brand);
+  font-weight: 650;
+}
+
+.device-settings__danger {
+  margin-top: 1rem;
+}
+
+@keyframes device-settings-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .device-settings__panel {
+    animation: none;
+  }
+}

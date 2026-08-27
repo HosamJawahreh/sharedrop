@@ -1,0 +1,147 @@
+.home-screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+  overflow: hidden;
+}
+
+.home-screen__atmosphere {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      color-mix(in srgb, var(--color-glow) 55%, transparent),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 80% 10%,
+      color-mix(in srgb, var(--color-accent) 22%, transparent),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 50% 90%,
+      color-mix(in srgb, var(--color-glow-soft) 70%, transparent),
+      transparent 45%
+    );
+  animation: atmosphere-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.home-screen__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 26rem);
+  text-align: center;
+  animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-screen__eyebrow {
+  margin: 0 0 0.85rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-screen__brand {
+  margin: 0;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 12vw, 4.4rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.home-screen__tagline {
+  margin: 1rem 0 2rem;
+  max-width: 18rem;
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.home-screen__cta {
+  animation: cta-pulse 2.8s ease-in-out infinite;
+}
+
+.home-screen__device {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 1.75rem;
+}
+
+.home-screen__device-label {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.home-screen__device-name {
+  padding: 0.35rem 0.55rem;
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--color-brand);
+  background: transparent;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.home-screen__device-name:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, white);
+  outline-offset: 2px;
+}
+
+@keyframes atmosphere-drift {
+  from {
+    transform: translate3d(-1.5%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.5%, 1.5%, 0) scale(1.04);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+  50% {
+    box-shadow: 0 16px 34px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-screen__atmosphere,
+  .home-screen__content,
+  .home-screen__cta {
+    animation: none;
+  }
+}
