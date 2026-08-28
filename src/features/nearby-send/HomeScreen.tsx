@@ -188,6 +188,7 @@ export function HomeScreen(): ReactNode {
                 <p className="nearby-screen__empty-title">No devices nearby</p>
                 <p className="nearby-screen__empty-copy">
                   Open ShareDrop on another device to appear here.
+                  {import.meta.env.DEV ? ' Locally, run npm run dev:all and open a second tab.' : ''}
                 </p>
               </div>
             ) : null}

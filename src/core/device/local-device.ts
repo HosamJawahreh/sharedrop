@@ -48,6 +48,36 @@ function parseUserAgent(ua: string): ParsedUserAgent {
   return { deviceType, platform, browser }
 }
 
+const DEV_TAB_DEVICE_KEY = 'sharedrop.dev.tabDeviceId'
+
+function isValidDeviceId(value: string): boolean {
+  return /^dev_[a-zA-Z0-9_-]+$/.test(value) && value.length <= 128
+}
+
+/**
+ * Dev-only: each browser tab gets its own deviceId so two local tabs can discover each other.
+ * Production and tests (injected storage) keep the persistent localStorage identity.
+ */
+function resolveDeviceIdForSession(
+  persistedDeviceId: string,
+  options: CreateLocalDeviceInfoOptions,
+): string {
+  if (
+    import.meta.env.DEV &&
+    options.storage === undefined &&
+    typeof sessionStorage !== 'undefined'
+  ) {
+    const existing = sessionStorage.getItem(DEV_TAB_DEVICE_KEY)
+    if (existing && isValidDeviceId(existing)) {
+      return existing
+    }
+    const tabDeviceId = createId('dev')
+    sessionStorage.setItem(DEV_TAB_DEVICE_KEY, tabDeviceId)
+    return tabDeviceId
+  }
+  return persistedDeviceId
+}
+
 export interface CreateLocalDeviceInfoOptions {
   /** Override storage (tests). Defaults to localStorage. */
   storage?: DeviceIdentityStorage | null
@@ -57,7 +87,7 @@ export interface CreateLocalDeviceInfoOptions {
 
 /**
  * Create local device info for this page session.
- * - deviceId: persistent ShareDrop identity (localStorage)
+ * - deviceId: persistent ShareDrop identity (localStorage); dev tabs use per-tab ids for local QA
  * - sessionId: ephemeral per page load (connection/session identity)
  * - displayName: user-defined or generated "My …" default
  */
@@ -82,7 +112,7 @@ export function createLocalDeviceInfo(options: CreateLocalDeviceInfoOptions = {}
   })
 
   return {
-    deviceId: identity.deviceId,
+    deviceId: resolveDeviceIdForSession(identity.deviceId, options),
     sessionId: createId('ses'),
     displayName: identity.isCustomName ? identity.displayName : presentation.displayName,
     deviceType: identity.deviceType,

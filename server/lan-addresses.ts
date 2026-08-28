@@ -56,14 +56,15 @@ export function formatDevStartupBanner(urls: DevServerUrls): string {
     lines.push('LAN:', '  (no external IPv4 address detected)', '')
   }
 
-  lines.push('Signaling:')
-  lines.push(`  ${urls.localSignalingUrl}`)
-  for (const url of urls.lanSignalingUrls) {
-    lines.push(`  ${url}`)
+  lines.push('Signaling (auto via web app /ws proxy):')
+  lines.push(`  ws://localhost:${urls.webPort}/ws`)
+  for (const webUrl of urls.lanWebUrls) {
+    const host = new URL(webUrl).hostname
+    lines.push(`  ws://${host}:${urls.webPort}/ws`)
   }
   lines.push('')
+  lines.push('Use npm run dev:all (web + signaling). Two tabs in one browser work in dev.')
   lines.push('Open ShareDrop from another device using a LAN URL above.')
-  lines.push('Signaling follows the web app host automatically (no IP in source code).')
   lines.push('')
 
   return lines.join('\n')
