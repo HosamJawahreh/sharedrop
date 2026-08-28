@@ -14,6 +14,21 @@ function hostnameFromWebSocketUrl(url: string): string | null {
   }
 }
 
+function webSocketUrlForLocation(
+  location: Pick<Location, 'protocol' | 'hostname' | 'port'>,
+): string {
+  if (location.protocol === 'https:') {
+    return `wss://${location.hostname}/ws`
+  }
+
+  if (import.meta.env.DEV || location.port === '4173') {
+    const portSuffix = location.port ? `:${location.port}` : ''
+    return `ws://${location.hostname}${portSuffix}/ws`
+  }
+
+  return `ws://${location.hostname}:${DEFAULT_SIGNALING_PORT}`
+}
+
 export interface ResolveSignalingUrlOptions {
   /** Explicit override (tests, VITE_SIGNALING_URL). */
   override?: string | undefined
@@ -58,18 +73,13 @@ export function resolveSignalingUrl(options: ResolveSignalingUrlOptions = {}): s
       !isLoopbackHostname(location.hostname) &&
       isLoopbackHostname(hostnameFromWebSocketUrl(resolved) ?? '')
     ) {
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-      return `${protocol}//${location.hostname}:${DEFAULT_SIGNALING_PORT}`
+      return webSocketUrlForLocation(location as Pick<Location, 'protocol' | 'hostname' | 'port'>)
     }
     return resolved
   }
 
   if (location) {
-    if (location.protocol === 'https:') {
-      // Same-origin TLS proxy (DirectAdmin / reverse proxy) — see .env.example `/ws` path.
-      return `wss://${location.hostname}/ws`
-    }
-    return `ws://${location.hostname}:${DEFAULT_SIGNALING_PORT}`
+    return webSocketUrlForLocation(location as Pick<Location, 'protocol' | 'hostname' | 'port'>)
   }
 
   return `ws://localhost:${DEFAULT_SIGNALING_PORT}`

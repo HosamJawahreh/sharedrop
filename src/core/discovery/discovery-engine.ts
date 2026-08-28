@@ -106,6 +106,9 @@ export function createDiscoveryEngine(options: DiscoveryEngineOptions = {}): Dis
       connected = false
       registered = false
       heartbeatActive = false
+      if (state === 'active') {
+        setState('reconnecting')
+      }
       emitDiagnostics()
     })
   } else {
@@ -119,6 +122,9 @@ export function createDiscoveryEngine(options: DiscoveryEngineOptions = {}): Dis
       connected = false
       registered = false
       heartbeatActive = false
+      if (state === 'active') {
+        setState('reconnecting')
+      }
       emitDiagnostics()
     })
   }

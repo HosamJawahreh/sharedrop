@@ -22,7 +22,7 @@ export function HomeScreen(): ReactNode {
     clearOfflineSelection,
     removeSavedDevice,
   } = useNearbySend()
-  const { unsavedNearbyDevices, savedDevices, discoveryState } = domain
+  const { unsavedNearbyDevices, savedDevices, discoveryState, discoveryDiagnostics } = domain
   const hasSaved = savedDevices.length > 0
   const hasNearby = unsavedNearbyDevices.length > 0
   const onlineSavedCount = savedDevices.filter((device) => device.presence === 'online').length
@@ -34,8 +34,14 @@ export function HomeScreen(): ReactNode {
     ? (savedDevices.find((device) => device.deviceId === ui.offlineSelectedDeviceId) ?? null)
     : null
 
+  const signalingUnreachable =
+    discoveryState === 'failed' ||
+    (discoveryDiagnostics !== null &&
+      !discoveryDiagnostics.connected &&
+      discoveryState === 'reconnecting')
+
   const statusMessage = (() => {
-    if (discoveryState === 'failed') {
+    if (discoveryState === 'failed' || signalingUnreachable) {
       return "Couldn't reach ShareDrop. Check your connection and try again."
     }
     if (hasAvailable) {

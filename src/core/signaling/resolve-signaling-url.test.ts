@@ -37,20 +37,20 @@ describe('resolveSignalingUrl', () => {
     expect(isProductionSignalingUrl('ws://localhost:8787')).toBe(false)
   })
 
-  it('derives ws URL from LAN web host without hardcoding IP', () => {
+  it('derives ws URL from LAN web host via same-origin /ws proxy', () => {
     expect(
       resolveSignalingUrl({
-        location: { protocol: 'http:', hostname: '192.168.1.25' },
+        location: { protocol: 'http:', hostname: '192.168.1.25', port: '5173' },
       }),
-    ).toBe('ws://192.168.1.25:8787')
+    ).toBe('ws://192.168.1.25:5173/ws')
   })
 
-  it('derives ws URL for localhost development', () => {
+  it('derives ws URL for localhost development via /ws proxy', () => {
     expect(
       resolveSignalingUrl({
-        location: { protocol: 'http:', hostname: 'localhost' },
+        location: { protocol: 'http:', hostname: 'localhost', port: '5173' },
       }),
-    ).toBe('ws://localhost:8787')
+    ).toBe('ws://localhost:5173/ws')
   })
 
   it('uses wss same-origin /ws path when page is served over https', () => {
@@ -83,9 +83,9 @@ describe('resolveSignalingUrl', () => {
     expect(
       resolveSignalingUrl({
         configuredUrl: 'ws://localhost:8787',
-        location: { protocol: 'http:', hostname: '192.168.100.205' },
+        location: { protocol: 'http:', hostname: '192.168.100.205', port: '5173' },
       }),
-    ).toBe('ws://192.168.100.205:8787')
+    ).toBe('ws://192.168.100.205:5173/ws')
   })
 
   it('honors configured URL in production strict mode (no LAN loopback override)', () => {
@@ -98,8 +98,12 @@ describe('resolveSignalingUrl', () => {
     ).toBe('wss://signal.example.com')
   })
 
-  it('falls back to localhost for SSR/tests', () => {
-    expect(resolveSignalingUrl({})).toBe('ws://localhost:8787')
+  it('derives localhost dev signaling via same-origin /ws proxy', () => {
+    expect(
+      resolveSignalingUrl({
+        location: { protocol: 'http:', hostname: 'localhost', port: '5173' },
+      }),
+    ).toBe('ws://localhost:5173/ws')
   })
 })
 

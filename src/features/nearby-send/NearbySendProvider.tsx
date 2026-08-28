@@ -252,8 +252,13 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     (currentScreen === 'home' || currentScreen === 'nearby') &&
     nearbyDevices.length === 0 &&
     savedDeviceViews.length === 0 &&
+    discoveryState !== 'failed' &&
+    discoveryState !== 'connecting' &&
+    discoveryState !== 'reconnecting' &&
     (noDevicesTimerReady ||
-      (!isSearching(discoveryState) && discoveryState !== 'idle' && discoveryState !== 'failed'))
+      (!isSearching(discoveryState) &&
+        discoveryState !== 'idle' &&
+        discoveryState !== 'failed'))
 
   const connectingDevice = useMemo(() => {
     if (!selectedDeviceId) return null
