@@ -1,7 +1,7 @@
 :root {
-  /* Typography */
-  --font-display: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
-  --font-body: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Typography — DM Sans + Plus Jakarta Sans */
+  --font-display: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --text-brand: clamp(2.35rem, 9vw, 3.35rem);
   --text-title: clamp(1.35rem, 4.5vw, 1.75rem);
   --text-section: 1.05rem;
@@ -10,21 +10,21 @@
   --text-meta: 0.82rem;
   --text-label: 0.72rem;
 
-  /* Color — Phase 15 premium indigo system */
-  --color-bg: #eef1f8;
-  --color-bg-deep: #e2e8f4;
-  --color-surface: #f8f9fc;
+  /* Color — refined violet / indigo */
+  --color-bg: #f6f7fc;
+  --color-bg-deep: #eceef8;
+  --color-surface: #fafbff;
   --color-surface-raised: #ffffff;
-  --color-brand: #1e1b4b;
-  --color-primary: #4338ca;
-  --color-secondary: #3b82f6;
-  --color-accent: #4338ca;
-  --color-accent-strong: #3730a3;
-  --color-on-accent: #f8fafc;
-  --color-text: #1e293b;
+  --color-brand: #1a1635;
+  --color-primary: #5b52e8;
+  --color-secondary: #7c6df0;
+  --color-accent: #5b52e8;
+  --color-accent-strong: #4c43d4;
+  --color-on-accent: #ffffff;
+  --color-text: #0f172a;
   --color-text-muted: #64748b;
   --color-glow: #c7d2fe;
-  --color-glow-soft: #dbeafe;
+  --color-glow-soft: #e0e7ff;
   --color-success: #16a34a;
   --color-danger: #dc2626;
   --color-warning: #d97706;
@@ -65,7 +65,7 @@
   --motion-signal: color-mix(in srgb, var(--color-accent) 55%, transparent);
 
   color: var(--color-text);
-  background: linear-gradient(168deg, var(--color-bg) 0%, var(--color-bg-deep) 58%, #dde4f2 100%);
+  background: linear-gradient(165deg, var(--color-bg) 0%, var(--color-bg-deep) 45%, #dfe6f8 100%);
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -100,6 +100,30 @@ textarea {
 
 .app-shell {
   min-height: 100dvh;
+}
+
+/* Centered primary actions — use on all consumer button groups */
+.sd-action-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 18rem;
+  margin-inline: auto;
+}
+
+.sd-glass-panel {
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--color-surface-raised) 92%, transparent);
+  box-shadow:
+    var(--shadow-soft),
+    0 0 0 1px color-mix(in srgb, white 40%, transparent) inset;
 }
 
 /* Collapsed developer diagnostics — never part of the consumer visual hierarchy */

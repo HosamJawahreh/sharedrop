@@ -11,8 +11,14 @@ import { Button } from '@/components/ui'
 import { useNearbySend } from './useNearbySend'
 import { DeviceRoleCard } from './DeviceRoleCard'
 import { transferFailureCopy } from './connection-ux-copy'
-import { AirdropWave, ConnectionPulse, TransferFlow } from './motion'
+import { AirdropWave, ConnectionPulse } from './motion'
+import { TransferProgressRing } from './TransferProgressRing'
+import { SuccessMark } from './SuccessMark'
+import { TransferStage } from './TransferStage'
+import { useTransferFlowSounds } from './ux/useFlowSounds'
 import './TransferPanel.css'
+import './SuccessMark.css'
+import './TransferStage.css'
 import './DeviceRoleCard.css'
 
 function ProgressBar({ value, label }: { value: number; label: string }): ReactNode {
@@ -55,6 +61,8 @@ export function TransferPanel(): ReactNode {
     transferProgress
   const incoming = transferProgress.incomingRequest
   const isConnectionReceiver = connectionRole === 'answerer'
+
+  useTransferFlowSounds(transferProgress)
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const list = event.target.files
@@ -114,33 +122,33 @@ export function TransferPanel(): ReactNode {
   if (isComplete) {
     const primaryName = files[0]?.name ?? 'file'
     return (
-      <div className="transfer-panel transfer-panel--complete sd-motion-complete">
+      <div className="transfer-panel transfer-panel--complete sd-glass-panel sd-motion-complete">
+        <SuccessMark />
         <p className="transfer-panel__status transfer-panel__status--success">
           {role === 'receiver' ? 'Received successfully' : 'Sent successfully'}
         </p>
         <p className="transfer-panel__filename">{primaryName}</p>
-        <p className="transfer-panel__summary" aria-hidden="true">
-          ✓
-        </p>
-        {role === 'receiver' ? (
+        <div className="sd-action-stack">
+          {role === 'receiver' ? (
+            <Button
+              className="transfer-panel__action"
+              onClick={() => {
+                saveReceivedFiles()
+              }}
+            >
+              Save files
+            </Button>
+          ) : null}
           <Button
+            variant="ghost"
             className="transfer-panel__action"
             onClick={() => {
-              saveReceivedFiles()
+              resetTransfer()
             }}
           >
-            Save files
+            Send more
           </Button>
-        ) : null}
-        <Button
-          variant="ghost"
-          className="transfer-panel__action"
-          onClick={() => {
-            resetTransfer()
-          }}
-        >
-          Send more
-        </Button>
+        </div>
       </div>
     )
   }
@@ -148,24 +156,26 @@ export function TransferPanel(): ReactNode {
   if (isFailed) {
     const copy = transferFailureCopy(sessionState === 'cancelled' ? 'cancelled' : 'failed')
     return (
-      <div className="transfer-panel transfer-panel--failed">
+      <div className="transfer-panel transfer-panel--failed sd-glass-panel">
         <p className="transfer-panel__status transfer-panel__status--error">{copy.title}</p>
         <p className="transfer-panel__hint">{copy.hint}</p>
-        <Button
-          className="transfer-panel__action"
-          onClick={() => {
-            resetTransfer()
-          }}
-        >
-          Try again
-        </Button>
+        <div className="sd-action-stack">
+          <Button
+            className="transfer-panel__action"
+            onClick={() => {
+              resetTransfer()
+            }}
+          >
+            Try again
+          </Button>
+        </div>
       </div>
     )
   }
 
   if (isIncoming && incoming) {
     return (
-      <div className="transfer-panel transfer-panel--incoming">
+      <div className="transfer-panel transfer-panel--incoming sd-glass-panel sd-motion-device-enter">
         <div className="transfer-incoming">
           <p className="transfer-panel__heading">Incoming transfer</p>
           {connectingDevice ? (
@@ -181,7 +191,7 @@ export function TransferPanel(): ReactNode {
             {incoming.files.length} file{incoming.files.length === 1 ? '' : 's'} ·{' '}
             {formatBytes(incoming.totalBytes)}
           </p>
-          <div className="transfer-incoming__actions">
+          <div className="sd-action-stack">
             <Button
               className="transfer-panel__action"
               onClick={() => {
@@ -214,93 +224,68 @@ export function TransferPanel(): ReactNode {
           : `Sending ${activeFile?.name ?? 'file'}`
 
     const flowDirection = role === 'sender' ? 'out' : 'in'
+    const progress = isTransferring ? transferProgress.overallProgress : (activeFile?.progress ?? 0)
 
     return (
-      <div className="transfer-panel transfer-panel--active">
-        <div className="transfer-motion" aria-hidden="true">
+      <div className="transfer-panel transfer-panel--active sd-glass-panel">
+        <div className="transfer-motion transfer-motion--stage">
           <AirdropWave variant="transfer" direction={flowDirection === 'out' ? 'out' : 'in'} />
+          {isTransferring ? (
+            <TransferProgressRing progress={progress} label="Transfer progress" />
+          ) : (
+            <ConnectionPulse phase="waiting" />
+          )}
         </div>
-        {connectingDevice ? (
-          <div className="transfer-motion transfer-motion--devices" aria-hidden="true">
-            {role === 'sender' ? (
-              <DeviceRoleCard
-                compact
-                displayName={domain.localDisplayName}
-                platform={domain.localPlatform}
-                deviceType={domain.localDeviceType}
-                eyebrow="This device"
-              />
-            ) : (
-              <DeviceRoleCard
-                compact
-                displayName={connectingDevice.displayName}
-                platform={connectingDevice.platform}
-                deviceType={connectingDevice.deviceType}
-              />
-            )}
-            {isTransferring ? (
-              <TransferFlow
-                direction={flowDirection}
-                progress={transferProgress.overallProgress}
-                active
-              />
-            ) : (
-              <ConnectionPulse phase="waiting" />
-            )}
-            {role === 'sender' ? (
-              <DeviceRoleCard
-                compact
-                displayName={connectingDevice.displayName}
-                platform={connectingDevice.platform}
-                deviceType={connectingDevice.deviceType}
-              />
-            ) : (
-              <DeviceRoleCard
-                compact
-                displayName={domain.localDisplayName}
-                platform={domain.localPlatform}
-                deviceType={domain.localDeviceType}
-                eyebrow="This device"
-              />
-            )}
-          </div>
-        ) : null}
+
         <p className="transfer-panel__heading">{heading}</p>
+
         {isTransferring && files.length > 1 && activeFileIndex > 0 ? (
           <p className="transfer-panel__file-index">
             {activeFileIndex} of {files.length}
           </p>
         ) : null}
+
         {activeFile && isTransferring ? (
-          <>
-            <p className="transfer-panel__filename">{activeFile.name}</p>
-            <ProgressBar value={activeFile.progress} label={`${activeFile.name} progress`} />
-          </>
+          <p className="transfer-panel__filename">{activeFile.name}</p>
         ) : null}
+
+        {connectingDevice && isTransferring ? (
+          <TransferStage
+            localName={domain.localDisplayName}
+            localPlatform={domain.localPlatform}
+            localDeviceType={domain.localDeviceType}
+            remoteName={connectingDevice.displayName}
+            remotePlatform={connectingDevice.platform}
+            remoteDeviceType={connectingDevice.deviceType}
+            direction={flowDirection}
+            active
+          />
+        ) : null}
+
         {isTransferring ? (
           <>
             <p className="transfer-panel__bytes">
               {formatBytes(transferredBytes)} / {formatBytes(totalBytes)}
             </p>
-            {bytesPerSecond > 0 ? (
-              <p className="transfer-panel__speed">{formatSpeed(bytesPerSecond)}</p>
-            ) : null}
-            {etaSeconds !== null ? (
-              <p className="transfer-panel__eta">{formatDuration(etaSeconds)}</p>
-            ) : null}
+            <p className="transfer-panel__stats">
+              {bytesPerSecond > 0 ? <span>{formatSpeed(bytesPerSecond)}</span> : null}
+              {etaSeconds !== null ? <span>{formatDuration(etaSeconds)} left</span> : null}
+            </p>
             <ProgressBar
               value={transferProgress.overallProgress}
               label="Overall transfer progress"
             />
-            <Button
-              variant="ghost"
-              className="transfer-panel__action"
-              onClick={() => {
-                void cancelTransfer()
-              }}
-            >
-              Cancel
-            </Button>
+            <div className="sd-action-stack">
+              <Button
+                variant="ghost"
+                className="transfer-panel__action"
+                onClick={() => {
+                  void cancelTransfer()
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
           </>
         ) : (
           <p className="transfer-panel__hint">Waiting for the other device to accept…</p>
@@ -311,7 +296,11 @@ export function TransferPanel(): ReactNode {
 
   if (isConnectionReceiver) {
     return (
-      <div className="transfer-panel transfer-panel--receive-idle">
+      <div className="transfer-panel transfer-panel--receive-idle sd-glass-panel">
+        <div className="transfer-motion transfer-motion--stage">
+          <AirdropWave variant="ambient" />
+          <ConnectionPulse phase="waiting" />
+        </div>
         {connectingDevice ? (
           <DeviceRoleCard
             displayName={connectingDevice.displayName}
@@ -329,6 +318,7 @@ export function TransferPanel(): ReactNode {
       className={[
         'transfer-panel',
         'transfer-panel--select',
+        'sd-glass-panel',
         isDragging ? 'transfer-panel--dragging' : '',
       ]
         .filter(Boolean)
@@ -360,7 +350,7 @@ export function TransferPanel(): ReactNode {
       ) : null}
 
       {selectedFiles.length === 0 ? (
-        <>
+        <div className="sd-action-stack">
           <Button
             className="transfer-panel__picker"
             onClick={() => {
@@ -372,7 +362,7 @@ export function TransferPanel(): ReactNode {
           <p className="transfer-panel__drop-hint" aria-hidden={isDragging ? undefined : true}>
             {isDragging ? 'Drop files to send' : 'Or drag files here'}
           </p>
-        </>
+        </div>
       ) : (
         <>
           <p className="transfer-panel__summary">
@@ -407,7 +397,7 @@ export function TransferPanel(): ReactNode {
               Drop to add more files
             </p>
           ) : null}
-          <div className="transfer-panel__actions">
+          <div className="sd-action-stack">
             <Button
               variant="ghost"
               onClick={() => {

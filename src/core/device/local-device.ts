@@ -1,5 +1,6 @@
 import { createId } from '@/utils/id'
 import {
+  loadDeviceIdentity,
   loadOrCreateDeviceIdentity,
   updateStoredDisplayNameFromPresentation,
   type DeviceIdentityStorage,
@@ -99,6 +100,9 @@ export async function refreshLocalDevicePresentation(
   local: LocalDeviceInfo,
   storage?: DeviceIdentityStorage | null,
 ): Promise<string | null> {
+  const stored = loadDeviceIdentity(storage)
+  if (stored?.isCustomName) return null
+
   const model = await readClientHintsModel()
   const presentation = buildDevicePresentation({
     platform: local.platform,

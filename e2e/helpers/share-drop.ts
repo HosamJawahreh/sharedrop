@@ -186,11 +186,13 @@ export async function sendFiles(
     })),
   )
 
-  await expect(sender.getByText('Ready to send')).toBeVisible()
+  await expect(sender.getByRole('heading', { name: /Ready to send/i })).toBeVisible()
   await sender.getByRole('button', { name: /^Send$/i }).click()
 
   if (options?.waitForIncomingOnReceiver !== false) {
-    await expect(sender.getByText(/Waiting for/i)).toBeVisible({ timeout: 15_000 })
+    await expect(
+      sender.locator('.transfer-panel__heading').filter({ hasText: /Waiting for/i }),
+    ).toBeVisible({ timeout: 15_000 })
   }
 }
 

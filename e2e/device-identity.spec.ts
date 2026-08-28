@@ -112,7 +112,7 @@ test.describe('ShareDrop device identity and saved devices', () => {
       const sources = [fileSpec('saved-device.bin', buffer)]
       await sendFiles(pair.sender, sources)
       await acceptOnReceiver(pair.receiver)
-      await expect(pair.receiver.getByText(/Transfer complete/i)).toBeVisible({ timeout: 60_000 })
+      await expect(pair.receiver.getByText(/successfully/i)).toBeVisible({ timeout: 60_000 })
 
       const snapshots = await readReceivedSnapshots(pair.receiver)
       verifySnapshotsAgainstSources(snapshots, sources, [sha256Hex(buffer)])

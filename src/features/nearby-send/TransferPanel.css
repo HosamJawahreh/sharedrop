@@ -1,20 +1,52 @@
 .transfer-panel {
   width: 100%;
-  max-width: 24rem;
+  max-width: 22rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-2) auto 0;
+  text-align: center;
+}
+
+.transfer-panel--active,
+.transfer-panel--incoming,
+.transfer-panel--failed,
+.transfer-panel--receive-idle,
+.transfer-panel--complete {
+  gap: var(--space-4);
+}
+
+.transfer-panel--active {
+  position: relative;
+}
+
+.transfer-panel--active .transfer-motion--stage {
+  position: relative;
+  width: 100%;
+  min-height: 8.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transfer-panel--active .sd-airdrop-wave {
+  position: absolute;
+  inset: 0;
 }
 
 .transfer-motion {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   width: 100%;
   max-width: 16rem;
-  margin: 0 auto var(--space-2);
+  margin: 0 auto;
+}
+
+.transfer-motion--devices {
+  margin-top: var(--space-3);
 }
 
 .transfer-panel__input {
@@ -30,34 +62,37 @@
 }
 
 .transfer-panel__picker {
-  min-height: 3rem;
+  min-height: 3.1rem;
   font-size: 1.05rem;
 }
 
 .transfer-panel__heading {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.12rem;
+  font-weight: 700;
   color: var(--color-brand);
+  letter-spacing: -0.02em;
 }
 
 .transfer-panel__hint {
   margin: 0;
+  max-width: 18rem;
   color: var(--color-text-muted);
-  font-size: 0.95rem;
-  line-height: 1.45;
+  font-size: var(--text-supporting);
+  line-height: 1.5;
 }
 
 .transfer-panel__status {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .transfer-panel__status--success {
-  color: var(--color-brand);
+  color: var(--color-success);
 }
 
 .transfer-panel__status--error {
@@ -76,7 +111,9 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 18rem;
   max-height: 14rem;
   overflow-y: auto;
   text-align: left;
@@ -86,8 +123,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.65rem 0.75rem;
+  gap: var(--space-2);
+  padding: var(--space-3);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
@@ -103,96 +140,208 @@
 .transfer-panel__filename {
   margin: 0;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .transfer-panel__filesize {
-  font-size: 0.82rem;
+  font-size: var(--text-meta);
   color: var(--color-text-muted);
 }
 
 .transfer-panel__remove {
   flex-shrink: 0;
   min-height: 2.25rem;
+  max-width: 5.5rem;
   padding-inline: 0.65rem;
   font-size: 0.85rem;
-}
-
-.transfer-panel__total {
-  margin: 0;
-  font-weight: 600;
-  color: var(--color-brand);
 }
 
 .transfer-panel__actions {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: stretch;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 18rem;
+  margin-inline: auto;
 }
 
 .transfer-panel__action {
-  min-height: 2.75rem;
+  min-height: var(--touch-min);
 }
 
 .transfer-panel__drop-hint {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: var(--text-meta);
 }
 
 .transfer-panel--dragging {
   outline: 2px dashed color-mix(in srgb, var(--color-accent) 55%, transparent);
-  outline-offset: 4px;
-  border-radius: 1rem;
+  outline-offset: 6px;
+  border-radius: var(--radius-xl);
 }
 
 .transfer-panel__file-index {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-meta);
   font-weight: 650;
-  color: var(--color-brand);
+  color: var(--color-text-muted);
 }
 
 .transfer-panel--select {
   position: relative;
+  width: 100%;
+}
+
+.transfer-panel--complete .transfer-panel__summary {
+  display: none;
+}
+
+.transfer-panel__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.transfer-panel__bytes {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-brand);
 }
 
 .transfer-progress {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: var(--space-3);
   width: 100%;
+  max-width: 18rem;
 }
 
 .transfer-progress__track {
   flex: 1;
-  height: 0.55rem;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
   overflow: hidden;
 }
 
 .transfer-progress__fill {
   height: 100%;
   border-radius: inherit;
-  background: var(--color-accent);
+  background: linear-gradient(
+    90deg,
+    var(--color-secondary),
+    color-mix(in srgb, var(--color-primary) 85%, #818cf8)
+  );
   transition: width 120ms linear;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 35%, transparent);
 }
 
 .transfer-progress__label {
   flex-shrink: 0;
   min-width: 2.5rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--text-meta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
   text-align: right;
+}
+
+/* Circular progress ring */
+.transfer-ring {
+  position: relative;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin: 0 auto;
+}
+
+.transfer-ring__glow {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-primary) 22%, transparent),
+    transparent 68%
+  );
+  animation: transfer-ring-glow 2.4s var(--motion-ease-out) infinite alternate;
+}
+
+.transfer-ring__outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-secondary) calc(var(--ring-progress, 0) * 360deg),
+    color-mix(in srgb, var(--color-primary) 10%, transparent) 0
+  );
+  padding: 0.35rem;
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.transfer-ring__inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+.transfer-ring__glyph {
+  font-size: 1.35rem;
+  line-height: 1;
+  animation: transfer-glyph-float 2s var(--motion-ease-out) infinite alternate;
+}
+
+.transfer-ring__value {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--color-brand);
+}
+
+@keyframes transfer-ring-glow {
+  from {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes transfer-glyph-float {
+  from {
+    transform: translateY(2px);
+  }
+  to {
+    transform: translateY(-4px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .transfer-progress__fill {
     transition: none;
+  }
+
+  .transfer-ring__glow,
+  .transfer-ring__glyph {
+    animation: none !important;
   }
 }

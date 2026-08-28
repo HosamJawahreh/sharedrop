@@ -2,20 +2,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   min-height: var(--touch-min);
-  padding: 0.8rem 1.35rem;
+  padding: 0.85rem 1.5rem;
   border: 0;
   border-radius: var(--radius-md);
-  font: inherit;
+  font-family: var(--font-body);
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
   touch-action: manipulation;
   transition:
-    transform 150ms ease,
-    background-color 150ms ease,
-    color 150ms ease,
-    box-shadow 150ms ease;
+    transform var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
 }
 
 .sd-button:focus-visible {
@@ -33,22 +34,37 @@
 }
 
 .sd-button--primary {
-  width: min(100%, 20rem);
+  width: 100%;
+  max-width: 18rem;
+  margin-inline: auto;
   color: var(--color-on-accent);
-  background: var(--color-accent);
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--color-accent) 22%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-secondary) 92%, white),
+    var(--color-accent-strong)
+  );
+  box-shadow:
+    0 4px 14px color-mix(in srgb, var(--color-primary) 28%, transparent),
+    0 1px 0 color-mix(in srgb, white 25%, transparent) inset;
 }
 
 .sd-button--primary:not(:disabled):hover {
-  background: var(--color-accent-strong);
+  background: linear-gradient(
+    145deg,
+    var(--color-secondary),
+    color-mix(in srgb, var(--color-accent-strong) 90%, black)
+  );
 }
 
 .sd-button--ghost {
+  width: 100%;
+  max-width: 18rem;
+  margin-inline: auto;
   color: var(--color-text-muted);
   background: transparent;
 }
 
 .sd-button--ghost:not(:disabled):hover {
   color: var(--color-text);
-  background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-raised));
 }

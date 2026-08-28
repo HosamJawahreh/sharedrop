@@ -159,7 +159,7 @@ test.describe('ShareDrop browser-to-browser transfer', () => {
 
       const snapshots = await readReceivedSnapshots(pair.receiver)
       expect(snapshots).toHaveLength(0)
-      await expect(pair.receiver.getByText(/Transfer complete/i)).not.toBeVisible()
+      await expect(pair.receiver.getByText(/successfully/i)).not.toBeVisible()
     })
   })
 
@@ -183,7 +183,7 @@ test.describe('ShareDrop browser-to-browser transfer', () => {
 
       const snapshots = await readReceivedSnapshots(pair.receiver)
       expect(snapshots).toHaveLength(0)
-      await expect(pair.sender.getByText(/Transfer complete/i)).not.toBeVisible()
+      await expect(pair.sender.getByText(/successfully/i)).not.toBeVisible()
     })
   })
 
@@ -223,7 +223,7 @@ test.describe('ShareDrop browser-to-browser transfer', () => {
 
       const snapshots = await readReceivedSnapshots(pair.receiver)
       expect(snapshots).toHaveLength(0)
-      await expect(pair.receiver.getByText(/Transfer complete/i)).not.toBeVisible()
+      await expect(pair.receiver.getByText(/successfully/i)).not.toBeVisible()
     })
   })
 

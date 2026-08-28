@@ -1,0 +1,153 @@
+.transfer-stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 20rem;
+  margin: var(--space-3) auto 0;
+}
+
+.transfer-stage .device-role-card {
+  min-width: 0;
+}
+
+.transfer-stage__beam {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 2.5rem;
+}
+
+.transfer-stage__beam-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-primary) 35%, transparent),
+    transparent
+  );
+}
+
+.transfer-stage__beam-pulse {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: -0.275rem;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent);
+  opacity: 0;
+}
+
+.transfer-stage--active .transfer-stage__beam-pulse {
+  animation: transfer-beam-travel 1.4s var(--motion-ease-out) infinite;
+}
+
+.transfer-stage--in.transfer-stage--active .transfer-stage__beam-pulse {
+  animation-name: transfer-beam-travel-in;
+}
+
+.transfer-stage__beam-packet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 0.85rem;
+  line-height: 1;
+  margin: -0.5rem -0.5rem;
+  opacity: 0;
+}
+
+.transfer-stage--active .transfer-stage__beam-packet {
+  animation: transfer-packet-travel 1.4s var(--motion-ease-out) infinite;
+}
+
+.transfer-stage--in.transfer-stage--active .transfer-stage__beam-packet {
+  animation-name: transfer-packet-travel-in;
+}
+
+@keyframes transfer-beam-travel {
+  0% {
+    opacity: 0;
+    transform: translateX(-1.25rem);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+}
+
+@keyframes transfer-beam-travel-in {
+  0% {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-1.25rem);
+  }
+}
+
+@keyframes transfer-packet-travel {
+  0% {
+    opacity: 0;
+    transform: translate(-1.5rem, -50%) scale(0.85);
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(1.5rem, -50%) scale(1);
+  }
+}
+
+@keyframes transfer-packet-travel-in {
+  0% {
+    opacity: 0;
+    transform: translate(1.5rem, -50%) scale(0.85);
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-1.5rem, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transfer-stage--active .transfer-stage__beam-pulse,
+  .transfer-stage--active .transfer-stage__beam-packet {
+    animation: none !important;
+    opacity: 0.6;
+  }
+}

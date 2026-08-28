@@ -5,6 +5,7 @@ import { TransferPanel } from './TransferPanel'
 import { DeviceRoleCard } from './DeviceRoleCard'
 import { connectionSubtitle, connectionTitle, resolveConnectionUxPhase } from './connection-ux-copy'
 import { AirdropWave, ConnectionPulse, type ConnectionMotionPhase } from './motion'
+import { useConnectionFlowSounds } from './ux/useFlowSounds'
 import './ConnectionScreen.css'
 import './DeviceRoleCard.css'
 
@@ -20,6 +21,7 @@ export function ConnectionScreen(): ReactNode {
     useNearbySend()
   const { connectionState, connectingDevice, connectionRole } = domain
   const deviceName = connectingDevice?.displayName ?? 'device'
+  useConnectionFlowSounds(connectionState)
   const alreadySaved =
     connectingDevice != null ? savedDevicesService.get(connectingDevice.deviceId) !== null : false
 
@@ -78,18 +80,28 @@ export function ConnectionScreen(): ReactNode {
           </p>
         ) : null}
 
+        {isConnecting ? (
+          <div className="connection-screen__dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+        ) : null}
+
         {isConnected ? <TransferPanel /> : null}
 
         {isConnected && !alreadySaved ? (
-          <Button
-            variant="ghost"
-            className="connection-screen__action"
-            onClick={() => {
-              saveCurrentPeer()
-            }}
-          >
-            Save device
-          </Button>
+          <div className="connection-screen__actions">
+            <Button
+              variant="ghost"
+              className="connection-screen__action"
+              onClick={() => {
+                saveCurrentPeer()
+              }}
+            >
+              Save device
+            </Button>
+          </div>
         ) : null}
 
         {isConnected && alreadySaved ? (
@@ -99,26 +111,30 @@ export function ConnectionScreen(): ReactNode {
         ) : null}
 
         {isFailed ? (
-          <Button
-            className="connection-screen__action"
-            onClick={() => {
-              void retryConnection()
-            }}
-          >
-            Try again
-          </Button>
+          <div className="connection-screen__actions">
+            <Button
+              className="connection-screen__action"
+              onClick={() => {
+                void retryConnection()
+              }}
+            >
+              Try again
+            </Button>
+          </div>
         ) : null}
 
         {isDisconnected ? (
-          <Button
-            variant="ghost"
-            className="connection-screen__action"
-            onClick={() => {
-              void returnToNearby()
-            }}
-          >
-            Back to devices
-          </Button>
+          <div className="connection-screen__actions">
+            <Button
+              variant="ghost"
+              className="connection-screen__action"
+              onClick={() => {
+                void returnToNearby()
+              }}
+            >
+              Back to devices
+            </Button>
+          </div>
         ) : null}
       </div>
     </section>

@@ -83,7 +83,9 @@ test.describe('Phase 9 global connectivity diagnostics', () => {
         await pair.sender.locator('input[type="file"]').setInputFiles(filePath)
         await expect(pair.sender.getByText('Ready to send')).toBeVisible()
         await pair.sender.getByRole('button', { name: /^Send$/i }).click()
-        await expect(pair.sender.getByText(/Waiting for/i)).toBeVisible({
+        await expect(
+          pair.sender.locator('.transfer-panel__heading').filter({ hasText: /Waiting for/i }),
+        ).toBeVisible({
           timeout: 15_000,
         })
         await acceptOnReceiver(pair.receiver)
