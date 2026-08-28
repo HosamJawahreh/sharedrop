@@ -25,7 +25,9 @@ export function HomeScreen(): ReactNode {
   const { unsavedNearbyDevices, savedDevices, discoveryState } = domain
   const hasSaved = savedDevices.length > 0
   const hasNearby = unsavedNearbyDevices.length > 0
-  const hasAny = hasSaved || hasNearby || domain.nearbyDevices.length > 0
+  const onlineSavedCount = savedDevices.filter((device) => device.presence === 'online').length
+  const availableCount = domain.nearbyDevices.length
+  const hasAvailable = availableCount > 0
   const searching = isSearching(discoveryState)
 
   const offlineDevice = ui.offlineSelectedDeviceId
@@ -36,8 +38,11 @@ export function HomeScreen(): ReactNode {
     if (discoveryState === 'failed') {
       return "Couldn't reach ShareDrop. Check your connection and try again."
     }
-    if (domain.nearbyDevices.length > 0) {
-      return `${domain.nearbyDevices.length} nearby`
+    if (hasAvailable) {
+      if (availableCount === 1) {
+        return '1 device available'
+      }
+      return `${availableCount} devices available`
     }
     if (searching && !ui.showNoDevicesHint) {
       return 'Looking for nearby devices…'
@@ -62,14 +67,14 @@ export function HomeScreen(): ReactNode {
           <p
             className={[
               'home-screen__status',
-              searching && !hasAny ? 'home-screen__status--searching' : '',
+              searching && !hasAvailable ? 'home-screen__status--searching' : '',
             ]
               .filter(Boolean)
               .join(' ')}
             role="status"
             aria-live="polite"
           >
-            {searching && !hasAny && !ui.showNoDevicesHint ? (
+            {searching && !hasAvailable && !ui.showNoDevicesHint ? (
               <span className="home-screen__status-pulse" aria-hidden="true" />
             ) : null}
             {statusMessage}
@@ -162,11 +167,17 @@ export function HomeScreen(): ReactNode {
                   )
                 })}
               </ul>
+            ) : onlineSavedCount > 0 ? (
+              <p className="home-screen__section-hint">
+                {onlineSavedCount === 1
+                  ? 'Your saved device is available above.'
+                  : 'Your saved devices are available above.'}
+              </p>
             ) : null}
 
-            {!hasAny && searching && !ui.showNoDevicesHint ? <PresenceWave /> : null}
+            {!hasAvailable && searching && !ui.showNoDevicesHint ? <PresenceWave /> : null}
 
-            {!hasAny && ui.showNoDevicesHint ? (
+            {!hasAvailable && ui.showNoDevicesHint ? (
               <div className="nearby-screen__empty">
                 <p className="nearby-screen__empty-title">No devices nearby</p>
                 <p className="nearby-screen__empty-copy">

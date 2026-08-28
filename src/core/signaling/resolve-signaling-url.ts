@@ -65,8 +65,11 @@ export function resolveSignalingUrl(options: ResolveSignalingUrlOptions = {}): s
   }
 
   if (location) {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${location.hostname}:${DEFAULT_SIGNALING_PORT}`
+    if (location.protocol === 'https:') {
+      // Same-origin TLS proxy (DirectAdmin / reverse proxy) — see .env.example `/ws` path.
+      return `wss://${location.hostname}/ws`
+    }
+    return `ws://${location.hostname}:${DEFAULT_SIGNALING_PORT}`
   }
 
   return `ws://localhost:${DEFAULT_SIGNALING_PORT}`
