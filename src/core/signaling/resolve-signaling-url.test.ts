@@ -79,6 +79,25 @@ describe('resolveSignalingUrl', () => {
     ).toBe('ws://192.168.1.25:8787')
   })
 
+  it('ignores loopback VITE_SIGNALING_URL when the page is opened from a LAN host', () => {
+    expect(
+      resolveSignalingUrl({
+        configuredUrl: 'ws://localhost:8787',
+        location: { protocol: 'http:', hostname: '192.168.100.205' },
+      }),
+    ).toBe('ws://192.168.100.205:8787')
+  })
+
+  it('honors configured URL in production strict mode (no LAN loopback override)', () => {
+    expect(
+      resolveSignalingUrl({
+        configuredUrl: 'wss://signal.example.com',
+        location: { protocol: 'https:', hostname: '192.168.100.205' },
+        strictConfiguredUrl: true,
+      }),
+    ).toBe('wss://signal.example.com')
+  })
+
   it('falls back to localhost for SSR/tests', () => {
     expect(resolveSignalingUrl({})).toBe('ws://localhost:8787')
   })

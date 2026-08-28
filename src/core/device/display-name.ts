@@ -1,8 +1,15 @@
 import { PROTOCOL } from '../../../shared/protocol'
+import { deviceCategoryLabel } from './device-presentation'
 import type { DeviceType, Platform } from './types'
 
 /** Build a safe default display name from platform/device type (no OS account data). */
 export function buildDefaultDisplayName(platform: Platform, deviceType: DeviceType): string {
+  if (platform === 'unknown') {
+    if (deviceType === 'phone') return 'My Mobile Device'
+    if (deviceType === 'tablet') return 'My Tablet'
+    if (deviceType === 'desktop') return 'My Computer'
+    return 'My Device'
+  }
   if (platform === 'ios') {
     return deviceType === 'tablet' ? 'My iPad' : 'My iPhone'
   }
@@ -24,21 +31,8 @@ export function buildDefaultDisplayName(platform: Platform, deviceType: DeviceTy
   return 'My Device'
 }
 
-/** Human-readable device type label for disambiguation (not a private identifier). */
-export function deviceTypeLabel(deviceType: DeviceType, platform: Platform): string {
-  if (platform === 'ios') {
-    return deviceType === 'tablet' ? 'iPad' : 'iPhone'
-  }
-  if (platform === 'android') {
-    return deviceType === 'tablet' ? 'Android Tablet' : 'Android Phone'
-  }
-  if (platform === 'macos') return 'Mac'
-  if (platform === 'windows') return deviceType === 'desktop' ? 'Windows PC' : 'Windows Device'
-  if (platform === 'linux') return deviceType === 'desktop' ? 'Linux Laptop' : 'Linux Device'
-  if (deviceType === 'phone') return 'Phone'
-  if (deviceType === 'tablet') return 'Tablet'
-  if (deviceType === 'desktop') return 'Computer'
-  return 'Device'
+export function deviceTypeLabel(deviceType: DeviceType, platform: Platform, ua = ''): string {
+  return deviceCategoryLabel(platform, deviceType, ua)
 }
 
 export type DisplayNameValidationResult =

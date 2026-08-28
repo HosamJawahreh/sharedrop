@@ -49,9 +49,9 @@ A device discovered through signaling may be:
 - on cellular
 - in another city or country
 
-Prefer: **Available devices** / **Online** / **Offline** / **Saved devices**.
+Prefer: **Available now** / **Online** / **Offline** / **Your devices** (saved).
 
-“Nearby” branding may remain for product simplicity, but do **not** claim discovery means same Wi‑Fi.
+Do **not** claim discovery means same Wi‑Fi. Do **not** describe globally reachable saved devices as “nearby.”
 
 ## Saved devices across networks
 
@@ -60,10 +60,13 @@ Saved matching uses persistent `deviceId` only — never IP, LAN, or geography.
 ```text
 Device A saves Device B
 Device B: Wi‑Fi → cellular → different country
-Device B online via signaling → Device A recognizes saved identity
+Device B online via signaling → Device A recognizes saved identity → connect when Online
 ```
 
-Saved identity is **not** authentication. Connection still requires accept/reject.
+- **Online** saved device → normal connection flow (ICE/TURN remain invisible to users)
+- **Offline** saved device → cannot receive files; no cloud queue / later delivery
+- Saved identity is **not** authentication; connection still requires accept/reject
+- Cross-country physical results remain **NOT TESTED** until recorded honestly
 
 ## Configuration
 
@@ -99,6 +102,7 @@ Safe diagnostics may report server count and schemes (`stun`/`turn`/`turns`) —
 
 ## Consumer UX
 
+- Open ShareDrop → **Your devices** / **Available now** on the homepage
 - Connecting… / Connected ✓
 - No STUN/TURN/ICE jargon in production UI
 - Candidate type / RTT: **development diagnostics only**

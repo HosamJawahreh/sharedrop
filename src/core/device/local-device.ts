@@ -1,6 +1,10 @@
 import { createId } from '@/utils/id'
-import { loadOrCreateDeviceIdentity, type DeviceIdentityStorage } from './device-identity-store'
-import { buildDefaultDisplayName } from './display-name'
+import {
+  loadOrCreateDeviceIdentity,
+  updateStoredDisplayNameFromPresentation,
+  type DeviceIdentityStorage,
+} from './device-identity-store'
+import { buildDevicePresentation, readClientHintsModel } from './device-presentation'
 import type { DeviceType, LocalDeviceInfo, Platform } from './types'
 
 interface ParsedUserAgent {
@@ -65,25 +69,59 @@ export function createLocalDeviceInfo(options: CreateLocalDeviceInfoOptions = {}
       deviceType: parsed.deviceType,
       platform: parsed.platform,
       browser: parsed.browser,
+      userAgent: ua,
     },
     options.storage === undefined ? undefined : options.storage,
   )
 
+  const presentation = buildDevicePresentation({
+    platform: identity.platform,
+    deviceType: identity.deviceType,
+    userAgent: ua,
+  })
+
   return {
     deviceId: identity.deviceId,
     sessionId: createId('ses'),
-    displayName: identity.displayName,
+    displayName: identity.isCustomName ? identity.displayName : presentation.displayName,
     deviceType: identity.deviceType,
     platform: identity.platform,
     browser: identity.browser,
+    baseName: presentation.baseName,
+    typeLabel: presentation.typeLabel,
   }
+}
+
+/**
+ * Refresh display name from client hints (async). Returns updated displayName or null.
+ */
+export async function refreshLocalDevicePresentation(
+  local: LocalDeviceInfo,
+  storage?: DeviceIdentityStorage | null,
+): Promise<string | null> {
+  const model = await readClientHintsModel()
+  const presentation = buildDevicePresentation({
+    platform: local.platform,
+    deviceType: local.deviceType,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    clientHintsModel: model,
+  })
+  if (presentation.displayName === local.displayName) return null
+
+  const updated = updateStoredDisplayNameFromPresentation(presentation.displayName, storage)
+  return updated?.displayName ?? presentation.displayName
 }
 
 /** Exported for testing with custom user agents. */
 export function parseUserAgentForTest(ua: string): ParsedUserAgent & { displayName: string } {
   const parsed = parseUserAgent(ua)
+  const presentation = buildDevicePresentation({
+    platform: parsed.platform,
+    deviceType: parsed.deviceType,
+    userAgent: ua,
+  })
   return {
     ...parsed,
-    displayName: buildDefaultDisplayName(parsed.platform, parsed.deviceType),
+    displayName: presentation.displayName,
   }
 }

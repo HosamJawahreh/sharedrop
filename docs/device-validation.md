@@ -1,16 +1,15 @@
-# Device & network validation (Phase 9)
+# Device & network validation
 
-**Date:** 2026-08-26  
+**Updated:** 2026-08-28 (Phase 14A)  
 **Environment:** Linux development host; Chromium via Playwright; local signaling `ws://127.0.0.1:8787`; default Google STUN in ICE config.  
-**Rule:** Unavailable physical/mobile/cross-network tests are **NOT TESTED**. No fabricated throughput or platform claims.
+**Rule:** Unavailable physical/mobile/cross-network tests are **NOT TESTED**. No fabricated throughput or platform claims.  
+**Rollup:** [phase-14a-physical-qa-report.md](./phase-14a-physical-qa-report.md) · [phase-13c-validation-report.md](./phase-13c-validation-report.md)
 
 ## Automated quality gates
 
 ```text
-Vitest: 98/98
-Playwright: 17/17
-Typecheck / lint / build / format: PASS
-Full report: docs/phase-9-validation-report.md
+Vitest: 163/163 PASS · Playwright: 18/18 PASS (same-host Chromium only)
+Physical Phase 14A: INCOMPLETE — see phase-14a-physical-qa-report.md
 ```
 
 ## Device matrix
@@ -93,8 +92,11 @@ Receiver memory ∝ file size (Blob assembly). Mobile OOM risk remains until phy
 
 ## How to run physical validation
 
+**Runbook:** [physical-qa-runbook.md](./physical-qa-runbook.md)  
+**Report:** [phase-14a-physical-qa-report.md](./phase-14a-physical-qa-report.md)
+
 1. `npm run dev:all` — open LAN URL on both devices.
-2. Confirm device names; start **Send to nearby**.
+2. Confirm device names; available devices appear on the homepage automatically.
 3. Connect; note **Connection** diagnostics (candidate type) in DEV builds.
 4. Transfer small → multi → Unicode/Arabic/emoji → zero-byte → cancel → interrupt → reconnect.
 5. Record browser version, OS, network, candidate type, size, duration, throughput.

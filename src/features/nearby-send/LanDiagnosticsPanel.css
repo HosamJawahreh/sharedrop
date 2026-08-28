@@ -1,9 +1,6 @@
 .lan-diagnostics {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
-  border: 1px dashed color-mix(in srgb, var(--color-accent) 30%, transparent);
-  border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--color-surface) 80%, white);
+  margin: var(--space-6) auto 0;
+  width: min(100%, var(--content-max));
   font-size: 0.78rem;
 }
 

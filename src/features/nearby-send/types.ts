@@ -1,4 +1,4 @@
-import type { NearbyDevice } from '@/core/device'
+import type { DeviceType, NearbyDevice, Platform } from '@/core/device'
 import type { ConnectionDiagnostics, ConnectionEngine, ConnectionState } from '@/core/connection'
 import type { DiscoveryDiagnostics, DiscoveryEngine, DiscoveryState } from '@/core/discovery'
 import type { PwaInstallState } from '@/core/pwa'
@@ -33,6 +33,12 @@ export interface NearbySendDomainView {
   connectingDevice: NearbyDevice | null
   transferProgress: TransferProgressView
   localDisplayName: string
+  localBaseName: string
+  localTypeLabel: string
+  localDeviceType: DeviceType
+  localPlatform: Platform
+  /** WebRTC offerer = user who initiated connect (sender intent). */
+  connectionRole: 'offerer' | 'answerer' | null
   pwa: PwaInstallState
 }
 
@@ -73,5 +79,5 @@ export interface NearbySendController {
   savedDevicesService: SavedDevicesService
 }
 
-/** How long to show "Finding available devices..." before the no-devices hint. */
+/** How long to show searching status before the no-devices hint. */
 export const NO_DEVICES_HINT_DELAY_MS = 8_000

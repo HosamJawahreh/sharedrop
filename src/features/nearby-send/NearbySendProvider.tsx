@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { sanitizeDisplayName, updateStoredDisplayName, type NearbyDevice } from '@/core/device'
+import {
+  sanitizeDisplayName,
+  updateStoredDisplayName,
+  refreshLocalDevicePresentation,
+  type NearbyDevice,
+} from '@/core/device'
+import { buildDevicePresentation } from '@/core/device/device-presentation'
 import type { ConnectionDiagnostics, ConnectionState } from '@/core/connection'
 import { type DiscoveryDiagnostics, type DiscoveryState } from '@/core/discovery'
 import {
@@ -82,6 +88,10 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
   const [noDevicesTimerReady, setNoDevicesTimerReady] = useState(false)
   const [noDevicesTimerGeneration, setNoDevicesTimerGeneration] = useState(0)
   const [localDisplayName, setLocalDisplayName] = useState(localDevice.displayName)
+  const [localBaseName, setLocalBaseName] = useState(
+    localDevice.baseName ?? localDevice.displayName,
+  )
+  const [localTypeLabel, setLocalTypeLabel] = useState(localDevice.typeLabel ?? '')
   const [deferredInstall, setDeferredInstall] = useState<BeforeInstallPromptEventLike | null>(null)
   const [installDismissed, setInstallDismissed] = useState(() => wasInstallPromptDismissed())
   const [appInstalled, setAppInstalled] = useState(() => wasAppInstalledMarked())
@@ -102,6 +112,21 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
   useEffect(() => {
     return savedDevices.subscribe(setSavedDeviceList)
   }, [savedDevices])
+
+  useEffect(() => {
+    void refreshLocalDevicePresentation(localDevice).then((name) => {
+      if (!name) return
+      setLocalDisplayName(name)
+      discovery.updateDisplayName(name)
+      const presentation = buildDevicePresentation({
+        platform: localDevice.platform,
+        deviceType: localDevice.deviceType,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      })
+      setLocalBaseName(presentation.baseName)
+      setLocalTypeLabel(presentation.typeLabel)
+    })
+  }, [discovery, localDevice])
 
   useEffect(() => {
     const onBeforeInstall = (event: Event): void => {
@@ -127,7 +152,9 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     const handleConnectionState = (nextState: ConnectionState): void => {
       setConnectionState(nextState)
       if (nextState === 'requesting' || nextState === 'connecting' || nextState === 'connected') {
-        setCurrentScreen((screen) => (screen === 'nearby' ? 'connecting' : screen))
+        setCurrentScreen((screen) =>
+          screen === 'home' || screen === 'nearby' ? 'connecting' : screen,
+        )
         const remoteId = connection.getRemoteDeviceId()
         if (remoteId) {
           setSelectedDeviceId((current) => current ?? remoteId)
@@ -164,13 +191,27 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
 
     connection.listen()
 
+    // Homepage instantly discovers available devices — no intermediate CTA.
+    // Defer start so React Strict Mode remount can cancel the first boot
+    // before discovery enters `starting` (which would make a second start() no-op).
+    let discoveryBootActive = true
+    const bootTimer = window.setTimeout(() => {
+      if (!discoveryBootActive) return
+      void discovery.start().catch(() => {
+        // DiscoveryEngine sets `failed`; UI shows signaling-unavailable copy.
+      })
+    }, 0)
+
     return () => {
+      discoveryBootActive = false
+      window.clearTimeout(bootTimer)
       for (const unsub of unsubscribers) {
         unsub?.()
       }
       connection.stopListening()
       transfer.stop()
       void connection.cancel()
+      // Invalidate in-flight start() before await stop (runId bump inside stop).
       void discovery.stop()
     }
   }, [discovery, connection, transfer, savedDevices])
@@ -185,7 +226,11 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
   }, [connectionState, transfer])
 
   useEffect(() => {
-    if (currentScreen !== 'nearby' || nearbyDevices.length > 0 || !isSearching(discoveryState)) {
+    if (
+      (currentScreen !== 'home' && currentScreen !== 'nearby') ||
+      nearbyDevices.length > 0 ||
+      !isSearching(discoveryState)
+    ) {
       return
     }
 
@@ -204,7 +249,7 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
   void savedDeviceList
 
   const showNoDevicesHint =
-    currentScreen === 'nearby' &&
+    (currentScreen === 'home' || currentScreen === 'nearby') &&
     nearbyDevices.length === 0 &&
     savedDeviceViews.length === 0 &&
     (noDevicesTimerReady || !isSearching(discoveryState))
@@ -233,21 +278,20 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     setCurrentScreen('home')
     setSelectedDeviceId(null)
     setOfflineSelectedDeviceId(null)
-    setNoDevicesTimerReady(false)
-    await discovery.stop()
-  }, [connection, discovery, transfer])
+    setConnectionUserMessage(null)
+    // Keep discovery running — homepage always shows live available devices.
+  }, [connection, transfer])
 
   const startNearbySend = useCallback(async () => {
     setSelectedDeviceId(null)
     setOfflineSelectedDeviceId(null)
     setNoDevicesTimerReady(false)
     setNoDevicesTimerGeneration((value) => value + 1)
-    setCurrentScreen('nearby')
+    setCurrentScreen('home')
     try {
       await discovery.start()
     } catch {
       // DiscoveryEngine already transitions to `failed` with a safe user message.
-      // Swallow so UI stays on nearby without unhandled rejections or leaked internals.
     }
   }, [discovery])
 
@@ -256,7 +300,8 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     await connection.cancel()
     setSelectedDeviceId(null)
     setOfflineSelectedDeviceId(null)
-    setCurrentScreen('nearby')
+    setConnectionUserMessage(null)
+    setCurrentScreen('home')
   }, [connection, transfer])
 
   const connectToDevice = useCallback(
@@ -433,6 +478,8 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     ],
   )
 
+  const connectionRole = connectionDiagnostics?.role ?? null
+
   const domain = useMemo<NearbySendDomainView>(
     () => ({
       discoveryState,
@@ -445,6 +492,11 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
       connectingDevice,
       transferProgress,
       localDisplayName,
+      localBaseName,
+      localTypeLabel,
+      localDeviceType: localDevice.deviceType,
+      localPlatform: localDevice.platform,
+      connectionRole,
       pwa: pwaState,
     }),
     [
@@ -458,6 +510,11 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
       connectingDevice,
       transferProgress,
       localDisplayName,
+      localBaseName,
+      localTypeLabel,
+      localDevice.deviceType,
+      localDevice.platform,
+      connectionRole,
       pwaState,
     ],
   )
@@ -552,6 +609,11 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
           displayName: device.displayName,
           presence: device.presence,
         })),
+      getDiscoveryState: () => discoveryState,
+      getDiscoveryDiagnostics: () => discoveryDiagnostics,
+      async startDiscovery() {
+        await discovery.start()
+      },
       async connectToDevice(deviceId: string) {
         await connectPeer(deviceId)
       },
@@ -598,6 +660,7 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
       },
       async stopNearby() {
         await goHome()
+        await discovery.stop()
       },
     }
 
@@ -608,6 +671,8 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     connection,
     connectToDevice,
     discovery,
+    discoveryDiagnostics,
+    discoveryState,
     goHome,
     transfer,
     savedDevices,

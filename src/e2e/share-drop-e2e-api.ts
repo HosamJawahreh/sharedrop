@@ -1,5 +1,6 @@
 import type { ConnectionDiagnostics, ConnectionState } from '@/core/connection'
 import type { NearbyDevice } from '@/core/device'
+import type { DiscoveryDiagnostics, DiscoveryState } from '@/core/discovery'
 import type { TransferDiagnostics } from '@/core/transfer/diagnostics'
 import type { TransferProgressView } from '@/core/transfer'
 
@@ -26,6 +27,10 @@ export interface ShareDropE2EApi {
   getLocalDisplayName(): string
   getNearbyDevices(): readonly Pick<NearbyDevice, 'deviceId' | 'displayName'>[]
   getSavedDevices(): readonly { deviceId: string; displayName: string; presence: string }[]
+  getDiscoveryState(): DiscoveryState
+  getDiscoveryDiagnostics(): DiscoveryDiagnostics | null
+  /** Ensures discovery/presence is running (idempotent). */
+  startDiscovery(): Promise<void>
   connectToDevice(deviceId: string): Promise<void>
   saveCurrentPeer(): boolean
   setDeviceName(name: string): void

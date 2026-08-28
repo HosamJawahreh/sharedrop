@@ -1,27 +1,77 @@
 :root {
+  /* Typography */
   --font-display: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
   --font-body: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --text-brand: clamp(2.35rem, 9vw, 3.35rem);
+  --text-title: clamp(1.35rem, 4.5vw, 1.75rem);
+  --text-section: 1.05rem;
+  --text-body: 1rem;
+  --text-supporting: 0.92rem;
+  --text-meta: 0.82rem;
+  --text-label: 0.72rem;
 
-  --color-bg: #e7eef2;
-  --color-bg-deep: #d5e2e9;
-  --color-surface: #f4f8fa;
-  --color-brand: #0b3d4a;
-  --color-accent: #147a6d;
-  --color-accent-strong: #0f655a;
-  --color-on-accent: #f7fffd;
-  --color-text: #122126;
-  --color-text-muted: #5b6c73;
-  --color-glow: #9fd6cf;
-  --color-glow-soft: #b7cfe0;
+  /* Color — Phase 15 premium indigo system */
+  --color-bg: #eef1f8;
+  --color-bg-deep: #e2e8f4;
+  --color-surface: #f8f9fc;
+  --color-surface-raised: #ffffff;
+  --color-brand: #1e1b4b;
+  --color-primary: #4338ca;
+  --color-secondary: #3b82f6;
+  --color-accent: #4338ca;
+  --color-accent-strong: #3730a3;
+  --color-on-accent: #f8fafc;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-glow: #c7d2fe;
+  --color-glow-soft: #dbeafe;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --color-online: var(--color-success);
+  --color-offline: #94a3b8;
+  --color-border: color-mix(in srgb, var(--color-brand) 8%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--color-primary) 28%, transparent);
+  --color-focus: color-mix(in srgb, var(--color-secondary) 55%, white);
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+
+  /* Surfaces */
+  --radius-sm: 0.55rem;
+  --radius-md: 0.85rem;
+  --radius-lg: 1.15rem;
+  --radius-xl: 1.5rem;
+  --shadow-soft: 0 8px 24px color-mix(in srgb, var(--color-brand) 8%, transparent);
+  --shadow-card: 0 2px 0 color-mix(in srgb, var(--color-brand) 4%, transparent);
+  --touch-min: 2.75rem;
+  --content-max: 26rem;
+
+  /* Motion tokens (Phase 13C) */
+  --motion-fast: 150ms;
+  --motion-normal: 280ms;
+  --motion-slow: 420ms;
+  --motion-ambient: 2.8s;
+  --motion-ambient-slow: 4.2s;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --motion-signal: color-mix(in srgb, var(--color-accent) 55%, transparent);
 
   color: var(--color-text);
-  background: linear-gradient(165deg, var(--color-bg) 0%, var(--color-bg-deep) 55%, #c9d8e2 100%);
+  background: linear-gradient(168deg, var(--color-bg) 0%, var(--color-bg-deep) 58%, #dde4f2 100%);
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.4;
+  line-height: 1.45;
   font-weight: 400;
 }
 
@@ -50,6 +100,54 @@ textarea {
 
 .app-shell {
   min-height: 100dvh;
+}
+
+/* Collapsed developer diagnostics — never part of the consumer visual hierarchy */
+.dev-diagnostics {
+  width: min(100%, var(--content-max));
+  margin: var(--space-6) auto 0;
+  padding: 0;
+  border: 1px dashed color-mix(in srgb, var(--color-brand) 18%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+}
+
+.dev-diagnostics > summary {
+  cursor: pointer;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 650;
+  list-style: none;
+}
+
+.dev-diagnostics > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dev-diagnostics[open] > summary {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dev-diagnostics__body {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f172a;
+    --color-bg-deep: #1e293b;
+    --color-surface: #111827;
+    --color-surface-raised: #1e293b;
+    --color-brand: #e2e8f0;
+    --color-text: #f1f5f9;
+    --color-text-muted: #94a3b8;
+    --color-glow: #312e81;
+    --color-glow-soft: #1e3a5f;
+    --color-border: color-mix(in srgb, white 10%, transparent);
+    --color-border-strong: color-mix(in srgb, var(--color-secondary) 35%, transparent);
+    background: linear-gradient(168deg, var(--color-bg) 0%, var(--color-bg-deep) 58%, #0b1220 100%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

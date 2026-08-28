@@ -102,6 +102,7 @@ export function createPresenceService(options: PresenceServiceOptions): Presence
       case 'registered':
         registered = true
         startHeartbeat()
+        notify()
         break
       case 'device_list':
         devicesById.clear()
@@ -129,6 +130,14 @@ export function createPresenceService(options: PresenceServiceOptions): Presence
 
   return {
     async start(): Promise<void> {
+      // Already subscribed — just ensure registration if connected.
+      if (unsubscribers.length > 0) {
+        if (client.getState() === 'connected' && !registered) {
+          sendRegister()
+        }
+        return
+      }
+
       unsubscribers.push(
         client.subscribe('message', handleServerMessage),
         client.subscribe('open', handleReconnect),

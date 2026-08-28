@@ -39,7 +39,7 @@ export function DeviceNameSettings(): ReactNode {
           </Button>
         </header>
 
-        <p className="device-settings__hint">This name is visible to nearby ShareDrop users.</p>
+        <p className="device-settings__hint">This name is visible to other ShareDrop users.</p>
 
         <form className="device-settings__form" onSubmit={onSubmit}>
           <label className="device-settings__label" htmlFor="device-name-input">

@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { NearbyDevice } from '@/core/device'
-import type { ConnectionEngine, ConnectionState } from '@/core/connection'
+import type { ConnectionDiagnostics, ConnectionEngine, ConnectionState } from '@/core/connection'
 import type { DiscoveryEngine, DiscoveryState } from '@/core/discovery'
 import type { TransferEngine, TransferProgressView } from '@/core/transfer'
 import type { TransferDiagnostics } from '@/core/transfer/diagnostics'
@@ -122,6 +122,7 @@ function createMockTransfer(): TransferEngine {
 function createMockStack(
   devices: NearbyDevice[] = [],
   savedDevices = createSavedDevicesService(createMemoryStorage()),
+  options?: { discoveryFails?: boolean },
 ): NearbySendStack {
   let discoveryState: DiscoveryState = 'idle'
   let connectionState: ConnectionState = 'idle'
@@ -135,14 +136,43 @@ function createMockStack(
     deviceType: 'desktop' as const,
     platform: 'linux' as const,
     browser: 'Chrome',
+    baseName: 'Linux PC',
+    typeLabel: 'Linux PC',
   }
 
-  const discovery: DiscoveryEngine = {
-    async start() {
-      discoveryState = 'active'
+  const buildConnectionDiagnostics = (): ConnectionDiagnostics => ({
+    state: connectionState,
+    connectionSessionId: connectionState === 'connected' ? 'conn_test' : null,
+    remoteDeviceId: devices[0]?.deviceId ?? null,
+    iceConnectionState: null,
+    peerConnectionState: null,
+    dataChannelState: null,
+    transferChannelState: null,
+    role: connectionState === 'connected' ? 'offerer' : null,
+    webRtcStats: null,
+  })
+
+  const connectionDiagnosticsListeners = new Set<(d: ConnectionDiagnostics) => void>()
+
+  const discoveryStart = vi.fn(async () => {
+    if (options?.discoveryFails) {
+      discoveryState = 'failed'
       for (const listener of discoveryStateListeners) listener(discoveryState)
-      for (const listener of deviceListeners) listener(devices)
-    },
+      throw new Error('signaling down')
+    }
+    discoveryState = 'active'
+    for (const listener of discoveryStateListeners) listener(discoveryState)
+    for (const listener of deviceListeners) listener(devices)
+  })
+
+  const connectionConnect = vi.fn(async (_deviceId: string) => {
+    connectionState = 'connected'
+    for (const listener of connectionStateListeners) listener(connectionState)
+    for (const listener of connectionDiagnosticsListeners) listener(buildConnectionDiagnostics())
+  })
+
+  const discovery: DiscoveryEngine = {
+    start: discoveryStart,
     async stop() {
       discoveryState = 'stopped'
       for (const listener of discoveryStateListeners) listener(discoveryState)
@@ -168,10 +198,7 @@ function createMockStack(
   const connection: ConnectionEngine = {
     listen: () => {},
     stopListening: () => {},
-    async connect(_deviceId: string) {
-      connectionState = 'connected'
-      for (const listener of connectionStateListeners) listener(connectionState)
-    },
+    connect: connectionConnect,
     async disconnect() {
       connectionState = 'disconnected'
       for (const listener of connectionStateListeners) listener(connectionState)
@@ -182,6 +209,12 @@ function createMockStack(
     },
     getState: () => connectionState,
     getRemoteDeviceId: () => devices[0]?.deviceId ?? null,
+    getDiagnostics: () => buildConnectionDiagnostics(),
+    subscribeToDiagnostics(listener) {
+      connectionDiagnosticsListeners.add(listener)
+      listener(buildConnectionDiagnostics())
+      return () => connectionDiagnosticsListeners.delete(listener)
+    },
     getTransferTransport: () => null,
     whenTransferTransportReady: async () => {
       throw new Error('Not available in mock')
@@ -212,13 +245,13 @@ function createMockStack(
   }
 }
 
-describe('NearbySendFlow', () => {
-  it('shows nearby devices and connects on selection', async () => {
+describe('NearbySendFlow homepage discovery', () => {
+  it('starts discovery immediately and shows online devices without a CTA', async () => {
     const stack = createMockStack([
       {
         deviceId: 'dev_remote',
         sessionId: 'ses_remote',
-        displayName: 'My iPhone',
+        displayName: 'Remote Device',
         deviceType: 'phone',
         platform: 'ios',
         browser: 'Safari',
@@ -233,27 +266,70 @@ describe('NearbySendFlow', () => {
       </NearbySendProvider>,
     )
 
-    expect(screen.getByText('Need Faster Transfer? Download To Your Device')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'ShareDrop' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Send to nearby' })).not.toBeInTheDocument()
+    expect(screen.getByText('Send files. Simply.')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Send to nearby' }))
-    expect(await screen.findByText('My iPhone')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Nearby' })).toBeInTheDocument()
-    expect(screen.getAllByText('Online').length).toBeGreaterThan(0)
-    expect(
-      screen.getByText((content, node) => {
-        return Boolean(
-          node?.classList.contains('nearby-screen__device-type') && content.includes('iPhone'),
-        )
-      }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Remote Device')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Nearby devices' })).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: /My iPhone/i }))
-    expect(await screen.findByText(/Connected to My iPhone/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(stack.discovery.start).toHaveBeenCalled()
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: /Remote Device/i }))
+    expect(await screen.findByRole('heading', { name: 'Ready to send' })).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'Select files' })).toBeInTheDocument()
-    expect(screen.getByText(/Or drag files here/i)).toBeInTheDocument()
   })
 
-  it('prioritizes saved devices and shows online/offline state', async () => {
+  it('connects an online saved device and never requires same Wi‑Fi language', async () => {
+    const storage = createMemoryStorage()
+    const saved = createSavedDevicesService(storage)
+    saved.upsert({
+      deviceId: 'dev_saved',
+      displayName: 'Travel Phone',
+      deviceType: 'phone',
+      platform: 'android',
+    })
+
+    const stack = createMockStack(
+      [
+        {
+          deviceId: 'dev_saved',
+          sessionId: 'ses_new_country',
+          displayName: 'Travel Phone (renamed elsewhere)',
+          deviceType: 'phone',
+          platform: 'android',
+          browser: 'Chrome',
+          status: 'available',
+          lastSeen: Date.now(),
+        },
+      ],
+      saved,
+    )
+
+    render(
+      <NearbySendProvider stack={stack}>
+        <NearbySendFlow />
+      </NearbySendProvider>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Saved devices' })).toBeInTheDocument()
+    expect(screen.queryByText(/same Wi-Fi required/i)).not.toBeInTheDocument()
+    const home = screen.getByRole('heading', { name: 'ShareDrop' }).closest('section')
+    expect(home?.textContent?.toLowerCase()).not.toContain('signaling')
+    expect(home?.textContent?.toLowerCase()).not.toMatch(/\bstun\b|\bturn\b|\bwebrtc\b/)
+    expect(screen.getByText('Travel Phone (renamed elsewhere)')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Nearby devices' })).toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Travel Phone \(renamed elsewhere\).*Available/i }),
+    )
+    expect(stack.connection.connect).toHaveBeenCalledWith('dev_saved')
+    expect(await screen.findByRole('heading', { name: 'Ready to send' })).toBeInTheDocument()
+  })
+
+  it('prioritizes saved devices, avoids duplicates, and keeps offline honest', async () => {
     const storage = createMemoryStorage()
     const saved = createSavedDevicesService(storage)
     saved.upsert({
@@ -261,6 +337,12 @@ describe('NearbySendFlow', () => {
       displayName: "Ahmed's iPhone",
       deviceType: 'phone',
       platform: 'ios',
+    })
+    saved.upsert({
+      deviceId: 'dev_offline',
+      displayName: 'Office MacBook',
+      deviceType: 'desktop',
+      platform: 'macos',
     })
 
     const stack = createMockStack(
@@ -295,11 +377,47 @@ describe('NearbySendFlow', () => {
       </NearbySendProvider>,
     )
 
-    await userEvent.click(screen.getByRole('button', { name: 'Send to nearby' }))
-    expect(await screen.findByRole('heading', { name: 'Your devices' })).toBeInTheDocument()
-    expect(screen.getByText('Saved')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Nearby' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Saved devices' })).toBeInTheDocument()
+    expect(screen.getAllByText('Saved').length).toBe(2)
+    expect(screen.getByRole('heading', { name: 'Nearby devices' })).toBeInTheDocument()
     expect(screen.getByText('Office Laptop')).toBeInTheDocument()
-    expect(screen.getByText(/Linux Laptop/)).toBeInTheDocument()
+    expect(screen.getByText("Ahmed's")).toBeInTheDocument()
+    expect(screen.getByText('Office')).toBeInTheDocument()
+    expect(screen.getAllByText("Ahmed's")).toHaveLength(1)
+
+    const savedSection = screen.getByRole('heading', { name: 'Saved devices' }).closest('section')
+    const nearbySection = screen.getByRole('heading', { name: 'Nearby devices' }).closest('section')
+    expect(savedSection?.textContent).toContain("Ahmed's")
+    expect(savedSection?.textContent).toContain('Office')
+    expect(nearbySection?.textContent).toContain('Office Laptop')
+    expect(nearbySection?.textContent).not.toContain("Ahmed's")
+
+    await userEvent.click(screen.getByRole('button', { name: /Office.*Offline/i }))
+    expect(await screen.findByText('This device is offline.')).toBeInTheDocument()
+    expect(screen.getByText(/not available right now/i)).toBeInTheDocument()
+    const offlineBanner = screen.getByText('This device is offline.').closest('div')
+    expect(offlineBanner?.textContent?.toLowerCase()).not.toContain('signaling')
+    expect(offlineBanner?.textContent?.toLowerCase()).not.toMatch(/\bstun\b|\bturn\b|\bwebrtc\b/)
+    expect(stack.connection.connect).not.toHaveBeenCalled()
+    expect(screen.queryByRole('heading', { name: 'Ready to send' })).not.toBeInTheDocument()
+  })
+
+  it('shows consumer-safe failure copy when discovery cannot start', async () => {
+    const stack = createMockStack([], createSavedDevicesService(createMemoryStorage()), {
+      discoveryFails: true,
+    })
+
+    render(
+      <NearbySendProvider stack={stack}>
+        <NearbySendFlow />
+      </NearbySendProvider>,
+    )
+
+    expect(
+      await screen.findByText("Couldn't reach ShareDrop. Check your connection and try again."),
+    ).toBeInTheDocument()
+    const home = screen.getByRole('heading', { name: 'ShareDrop' }).closest('section')
+    expect(home?.textContent?.toLowerCase()).not.toContain('signaling')
+    expect(home?.textContent?.toLowerCase()).not.toMatch(/\bstun\b|\bturn\b|\bwebrtc\b|\bice\b/)
   })
 })

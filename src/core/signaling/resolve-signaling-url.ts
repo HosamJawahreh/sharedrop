@@ -2,6 +2,18 @@
 
 const DEFAULT_SIGNALING_PORT = 8787
 
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === 'localhost' || /^127\.\d+\.\d+\.\d+$/.test(hostname)
+}
+
+function hostnameFromWebSocketUrl(url: string): string | null {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return null
+  }
+}
+
 export interface ResolveSignalingUrlOptions {
   /** Explicit override (tests, VITE_SIGNALING_URL). */
   override?: string | undefined
@@ -9,6 +21,10 @@ export interface ResolveSignalingUrlOptions {
   location?: Pick<Location, 'protocol' | 'hostname'> | undefined
   /** Env value from import.meta.env.VITE_SIGNALING_URL */
   configuredUrl?: string | undefined
+  /**
+   * Production builds: always honor configuredUrl (disable LAN loopback overrides).
+   */
+  strictConfiguredUrl?: boolean | undefined
 }
 
 /**
@@ -34,7 +50,18 @@ export function resolveSignalingUrl(options: ResolveSignalingUrlOptions = {}): s
 
   const configuredUrl = options.configuredUrl?.trim()
   if (configuredUrl) {
-    return assertWebSocketUrl(configuredUrl, location)
+    const resolved = assertWebSocketUrl(configuredUrl, location)
+    // LAN physical devices must not follow loopback env overrides from the dev machine.
+    if (
+      !options.strictConfiguredUrl &&
+      location &&
+      !isLoopbackHostname(location.hostname) &&
+      isLoopbackHostname(hostnameFromWebSocketUrl(resolved) ?? '')
+    ) {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+      return `${protocol}//${location.hostname}:${DEFAULT_SIGNALING_PORT}`
+    }
+    return resolved
   }
 
   if (location) {

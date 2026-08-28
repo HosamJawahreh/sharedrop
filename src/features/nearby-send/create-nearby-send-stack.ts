@@ -34,6 +34,7 @@ function resolveStackSignalingUrl(override?: string): string {
   return resolveSignalingUrl({
     override,
     configuredUrl: import.meta.env.VITE_SIGNALING_URL,
+    strictConfiguredUrl: import.meta.env.PROD,
   })
 }
 

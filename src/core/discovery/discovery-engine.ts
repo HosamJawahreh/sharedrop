@@ -18,6 +18,7 @@ function resolveDiscoverySignalingUrl(override?: string): string {
   return resolveSignalingUrl({
     override,
     configuredUrl: import.meta.env.VITE_SIGNALING_URL,
+    strictConfiguredUrl: import.meta.env.PROD,
   })
 }
 
@@ -31,6 +32,9 @@ export function createDiscoveryEngine(options: DiscoveryEngineOptions = {}): Dis
   let registered = false
   let connected = false
   let ownsSignalingClient = false
+  /** Bumps on each start/stop so in-flight start() cannot clobber a later stop(). */
+  let runId = 0
+  let startLock: Promise<void> | null = null
 
   const deviceListeners = new Set<DevicesListener>()
   const stateListeners = new Set<DiscoveryStateListener>()
@@ -127,53 +131,94 @@ export function createDiscoveryEngine(options: DiscoveryEngineOptions = {}): Dis
 
   return {
     async start(): Promise<void> {
-      if (state === 'active' || state === 'starting' || state === 'connecting') {
+      if (state === 'active' && presence.isRegistered()) {
         return
       }
 
-      try {
-        setState('starting')
-        setState('connecting')
-        if (client.getState() !== 'connected') {
-          await client.connect()
+      if (startLock) {
+        await startLock
+        if (state === 'active' && presence.isRegistered()) {
+          return
         }
-        if (client.getState() !== 'connected') {
-          await new Promise<void>((resolve, reject) => {
-            if (client.getState() === 'connected') {
-              resolve()
-              return
-            }
+      }
 
-            const timeout = setTimeout(() => {
-              unsub()
-              reject(new Error('Signaling connection timed out'))
-            }, 15_000)
+      const doStart = async (): Promise<void> => {
+        if (state === 'active' && presence.isRegistered()) {
+          return
+        }
 
-            const unsub = client.subscribe('open', () => {
-              clearTimeout(timeout)
-              unsub()
-              resolve()
+        // A prior start may have been abandoned mid-flight — reset before retrying.
+        if (state === 'starting' || state === 'connecting' || state === 'reconnecting') {
+          runId += 1
+          await presence.stop().catch(() => {})
+          setState('stopped')
+        }
+
+        const thisRun = ++runId
+
+        try {
+          setState('starting')
+          setState('connecting')
+          if (client.getState() !== 'connected') {
+            await client.connect()
+          }
+          if (thisRun !== runId) {
+            return
+          }
+          if (client.getState() !== 'connected') {
+            await new Promise<void>((resolve, reject) => {
+              if (client.getState() === 'connected') {
+                resolve()
+                return
+              }
+
+              const timeout = setTimeout(() => {
+                unsub()
+                reject(new Error('Signaling connection timed out'))
+              }, 15_000)
+
+              const unsub = client.subscribe('open', () => {
+                clearTimeout(timeout)
+                unsub()
+                resolve()
+              })
             })
+          }
+          if (thisRun !== runId) {
+            return
+          }
+          connected = client.getState() === 'connected'
+          await presence.start()
+          if (thisRun !== runId) {
+            await presence.stop().catch(() => {})
+            return
+          }
+          registered = presence.isRegistered()
+          heartbeatActive = registered && connected
+          setState('active')
+          emitDiagnostics()
+        } catch (error) {
+          if (thisRun !== runId) {
+            return
+          }
+          setState('failed')
+          throw new DiscoveryError({
+            userMessage: "Couldn't reach ShareDrop. Check your connection and try again.",
+            technicalMessage:
+              error instanceof Error ? error.message : 'Unknown discovery start error',
+            cause: error,
           })
         }
-        connected = client.getState() === 'connected'
-        await presence.start()
-        registered = presence.isRegistered()
-        heartbeatActive = registered && connected
-        setState('active')
-      } catch (error) {
-        setState('failed')
-        throw new DiscoveryError({
-          userMessage:
-            'Could not reach the signaling service. Check your connection and try again.',
-          technicalMessage:
-            error instanceof Error ? error.message : 'Unknown discovery start error',
-          cause: error,
-        })
       }
+
+      startLock = doStart().finally(() => {
+        startLock = null
+      })
+      await startLock
     },
 
     async stop(): Promise<void> {
+      runId += 1
       if (state === 'idle' || state === 'stopped' || state === 'stopping') {
         return
       }

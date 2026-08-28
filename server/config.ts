@@ -23,6 +23,22 @@ function parsePositiveInt(raw: string | undefined, fallback: number): number {
   return Math.floor(value)
 }
 
+/**
+ * Resolve signaling listen port.
+ * Priority: explicit SIGNALING_PORT → hosting PORT → development default 8787.
+ */
+export function resolveServerPort(env: NodeJS.ProcessEnv = process.env): number {
+  const signalingPort = env.SIGNALING_PORT?.trim()
+  if (signalingPort) {
+    return parsePositiveInt(signalingPort, 8787)
+  }
+  const platformPort = env.PORT?.trim()
+  if (platformPort) {
+    return parsePositiveInt(platformPort, 8787)
+  }
+  return 8787
+}
+
 export function isProductionEnv(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.NODE_ENV === 'production' || env.SHAREDROP_ENV === 'production'
 }
@@ -34,7 +50,7 @@ export function isProductionEnv(env: NodeJS.ProcessEnv = process.env): boolean {
 export function loadConfig(options: LoadConfigOptions = {}): ServerConfig {
   const env = options.env ?? process.env
   const isProduction = isProductionEnv(env)
-  const port = parsePositiveInt(env.SIGNALING_PORT, 8787)
+  const port = resolveServerPort(env)
   const host = env.SIGNALING_HOST ?? '0.0.0.0'
   const allowedOrigins = resolveAllowedOrigins(env.SIGNALING_ALLOWED_ORIGINS, { isProduction })
 

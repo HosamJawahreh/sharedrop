@@ -1,5 +1,4 @@
 export { HomeScreen } from './HomeScreen'
-export { NearbyDevicesScreen } from './NearbyDevicesScreen'
 export { ConnectionScreen } from './ConnectionScreen'
 export { NearbySendFlow } from './NearbySendFlow'
 export { NearbySendProvider } from './NearbySendProvider'

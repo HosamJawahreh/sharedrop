@@ -30,8 +30,8 @@ test.describe('ShareDrop device identity and saved devices', () => {
       const receiverName = await receiver.evaluate(() =>
         window.__sharedropE2E!.getLocalDisplayName(),
       )
-      expect(senderName).toBe('My Android Phone')
-      expect(receiverName).toBe('My iPhone')
+      expect(senderName).toBe('Pixel 7 Android Phone')
+      expect(receiverName).toBe('iPhone')
 
       await sender.evaluate(() => window.__sharedropE2E!.setDeviceName("Hosam's Android"))
       await sender.reload()
@@ -81,7 +81,7 @@ test.describe('ShareDrop device identity and saved devices', () => {
         { timeout: 15_000 },
       )
 
-      await expect(pair.sender.getByRole('heading', { name: 'Your devices' })).toBeVisible()
+      await expect(pair.sender.getByRole('heading', { name: 'Saved devices' })).toBeVisible()
 
       await pair.sender.waitForFunction(
         (deviceId) => {

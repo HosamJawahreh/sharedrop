@@ -1,0 +1,117 @@
+/* ShareDrop Phase 15 — ambient wave background */
+
+.sd-airdrop-wave {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sd-airdrop-wave__core {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin: -0.275rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  opacity: 0.85;
+}
+
+.sd-airdrop-wave__ring {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 5rem;
+  height: 5rem;
+  margin: -2.5rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+  animation: sd-airdrop-expand var(--motion-ambient-slow) var(--motion-ease-out) infinite;
+  opacity: 0;
+}
+
+.sd-airdrop-wave__ring:nth-child(2) {
+  animation-delay: calc(var(--motion-ambient-slow) * 0.33);
+}
+
+.sd-airdrop-wave__ring:nth-child(3) {
+  animation-delay: calc(var(--motion-ambient-slow) * 0.66);
+}
+
+.sd-airdrop-wave--transfer .sd-airdrop-wave__core {
+  animation: sd-airdrop-pulse 1.8s var(--motion-ease-out) infinite;
+}
+
+.sd-airdrop-wave--transfer .sd-airdrop-wave__packet {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: -0.55rem;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--color-accent) 85%, white);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  animation: sd-airdrop-packet-out var(--motion-slow) var(--motion-ease) infinite alternate;
+}
+
+.sd-airdrop-wave--transfer-in .sd-airdrop-wave__packet {
+  animation-name: sd-airdrop-packet-in;
+}
+
+@keyframes sd-airdrop-expand {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+@keyframes sd-airdrop-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes sd-airdrop-packet-out {
+  from {
+    transform: translateY(0) scale(0.9);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(-2.5rem) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sd-airdrop-packet-in {
+  from {
+    transform: translateY(-2.5rem) scale(0.9);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-airdrop-wave__ring,
+  .sd-airdrop-wave__core,
+  .sd-airdrop-wave__packet {
+    animation: none !important;
+  }
+}

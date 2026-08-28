@@ -193,4 +193,36 @@ describe('saved devices service', () => {
     expect(views[0]).not.toHaveProperty('network')
     expect(JSON.stringify(service.list()[0])).not.toMatch(/192\.168|10\.|172\./)
   })
+
+  it('keeps matching when the peer renames itself or opens a new session', () => {
+    const service = createSavedDevicesService(memoryStorage())
+    service.upsert({
+      deviceId: 'dev_peer',
+      displayName: 'Old Name',
+      deviceType: 'phone',
+      platform: 'android',
+    })
+
+    const renamedNewSession: NearbyDevice[] = [
+      {
+        deviceId: 'dev_peer',
+        sessionId: 'ses_brand_new_tab',
+        displayName: 'New Peer Name',
+        deviceType: 'tablet',
+        platform: 'android',
+        browser: 'Chrome',
+        status: 'available',
+        lastSeen: Date.now(),
+      },
+    ]
+
+    const views = service.withPresence(renamedNewSession)
+    expect(views).toHaveLength(1)
+    expect(views[0]?.deviceId).toBe('dev_peer')
+    expect(views[0]?.presence).toBe('online')
+    // Live presence display name is shown while online; identity remains deviceId.
+    expect(views[0]?.displayName).toBe('New Peer Name')
+    expect(service.get('dev_peer')?.displayName).toBe('Old Name')
+    expect(service.unsavedNearby(renamedNewSession)).toHaveLength(0)
+  })
 })

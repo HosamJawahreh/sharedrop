@@ -7,6 +7,16 @@
   margin-top: 0.5rem;
 }
 
+.transfer-motion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  max-width: 16rem;
+  margin: 0 auto var(--space-2);
+}
+
 .transfer-panel__input {
   position: absolute;
   width: 1px;
@@ -51,7 +61,7 @@
 }
 
 .transfer-panel__status--error {
-  color: #c0392b;
+  color: var(--color-danger);
 }
 
 .transfer-panel__summary {
@@ -78,8 +88,9 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.65rem 0.75rem;
-  border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
 }
 
 .transfer-panel__file-info {
@@ -159,8 +170,8 @@
 .transfer-progress__track {
   flex: 1;
   height: 0.55rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
   overflow: hidden;
 }
 

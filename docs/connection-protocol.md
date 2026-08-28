@@ -4,8 +4,8 @@ Phase 3 extends signaling with WebRTC connection negotiation messages.
 
 ## Roles
 
-- **Offerer** — device that selects a nearby peer and initiates the connection
-- **Answerer** — device that receives the connection request while on the nearby screen
+- **Offerer** — device that selects a peer and initiates the connection
+- **Answerer** — device that receives the connection request while ShareDrop is open
 
 Only the offerer sends `connection_offer`. Only the answerer sends `connection_answer`.
 
@@ -19,15 +19,15 @@ Sessions expire after 120 seconds if unused.
 
 ## Client → server messages
 
-| Type                 | Purpose                                       |
-| -------------------- | --------------------------------------------- |
-| `connection_request` | Offerer asks to connect to answerer           |
-| `connection_accept`  | Answerer accepts (auto when on nearby screen) |
-| `connection_reject`  | Answerer rejects                              |
-| `connection_offer`   | Offerer SDP offer                             |
-| `connection_answer`  | Answerer SDP answer                           |
-| `connection_ice`     | Trickle ICE candidate                         |
-| `connection_cancel`  | Either side cancels                           |
+| Type                 | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `connection_request` | Offerer asks to connect to answerer            |
+| `connection_accept`  | Answerer accepts (auto when ShareDrop is open) |
+| `connection_reject`  | Answerer rejects                               |
+| `connection_offer`   | Offerer SDP offer                              |
+| `connection_answer`  | Answerer SDP answer                            |
+| `connection_ice`     | Trickle ICE candidate                          |
+| `connection_cancel`  | Either side cancels                            |
 
 All messages include:
 

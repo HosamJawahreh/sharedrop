@@ -25,32 +25,32 @@ function memoryStorage(): DeviceIdentityStorage {
 }
 
 describe('createLocalDeviceInfo user-agent parsing', () => {
-  it('detects iPhone with My prefix', () => {
+  it('detects iPhone presentation from user agent', () => {
     const parsed = parseUserAgentForTest(
       'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
     )
     expect(parsed.platform).toBe('ios')
     expect(parsed.deviceType).toBe('phone')
-    expect(parsed.displayName).toBe('My iPhone')
+    expect(parsed.displayName).toBe('iPhone')
     expect(parsed.browser).toBe('Safari')
   })
 
-  it('detects Android phone with My prefix', () => {
+  it('detects Android phone presentation from user agent', () => {
     const parsed = parseUserAgentForTest(
       'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
     )
     expect(parsed.platform).toBe('android')
     expect(parsed.deviceType).toBe('phone')
-    expect(parsed.displayName).toBe('My Android Phone')
+    expect(parsed.displayName).toBe('Pixel 8 Android Phone')
   })
 
-  it('detects Linux desktop with My prefix', () => {
+  it('detects Linux desktop presentation from user agent', () => {
     const parsed = parseUserAgentForTest(
       'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     )
     expect(parsed.platform).toBe('linux')
     expect(parsed.deviceType).toBe('desktop')
-    expect(parsed.displayName).toBe('My Linux Laptop')
+    expect(parsed.displayName).toBe('Linux PC')
   })
 })
 
@@ -68,7 +68,7 @@ describe('device identity persistence', () => {
     expect(first.deviceId).toMatch(/^dev_/)
     expect(second.deviceId).toBe(first.deviceId)
     expect(second.sessionId).not.toBe(first.sessionId)
-    expect(second.displayName).toBe('My iPhone')
+    expect(second.displayName).toBe('iPhone')
   })
 
   it('persists custom names including Unicode, Arabic, and emoji', () => {
@@ -90,7 +90,7 @@ describe('device identity persistence', () => {
     expect(reloaded.displayName).toBe('جهاز أحمد')
   })
 
-  it('resets custom name to generated default', () => {
+  it('resets custom name to auto-detected presentation', () => {
     const storage = memoryStorage()
     createLocalDeviceInfo({
       storage,
@@ -98,7 +98,7 @@ describe('device identity persistence', () => {
     })
     updateStoredDisplayName('Office Mac', storage)
     const reset = resetStoredDisplayName(storage)
-    expect(reset?.displayName).toBe('My Mac')
+    expect(reset?.displayName).toBe('Mac MacBook')
     expect(reset?.isCustomName).toBe(false)
   })
 

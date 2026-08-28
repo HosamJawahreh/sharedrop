@@ -31,4 +31,8 @@ export interface LocalDeviceInfo {
   deviceType: DeviceType
   platform: Platform
   browser: string
+  /** Best-effort distinguishing name for UI (line 1 on device cards). */
+  baseName?: string
+  /** Device category for UI (line 2 on device cards). */
+  typeLabel?: string
 }

@@ -51,9 +51,25 @@ async function waitForE2E(page: Page): Promise<void> {
 
 export async function startNearbySend(page: Page): Promise<void> {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Send to nearby' }).click()
-  await expect(page.getByRole('heading', { name: 'Nearby devices', exact: true })).toBeVisible()
   await waitForE2E(page)
+  // Homepage auto-starts discovery — wait for brand + live status region.
+  await expect(page.getByRole('heading', { name: 'ShareDrop', exact: true })).toBeVisible()
+  await expect(page.locator('.home-screen__status[role="status"]')).toBeVisible()
+  // Belt-and-suspenders: ensure presence is running even if Strict Mode raced auto-boot.
+  await page.evaluate(async () => {
+    await window.__sharedropE2E?.startDiscovery()
+  })
+  // Wait until presence registration completes (not merely local device id).
+  await page.waitForFunction(
+    () => {
+      const api = window.__sharedropE2E
+      if (!api) return false
+      const diagnostics = api.getDiscoveryDiagnostics()
+      return Boolean(diagnostics?.registered && diagnostics.connected)
+    },
+    null,
+    { timeout: 30_000 },
+  )
 }
 
 async function waitForPeerVisible(page: Page, displayName: string): Promise<string> {
@@ -83,6 +99,9 @@ export async function connectPair(pair: ShareDropPair): Promise<void> {
   await Promise.all([startNearbySend(sender), startNearbySend(receiver)])
 
   const receiverDeviceId = await receiver.evaluate(() => window.__sharedropE2E!.getLocalDeviceId())
+  const senderDisplayName = await sender.evaluate(() =>
+    window.__sharedropE2E!.getLocalDisplayName(),
+  )
   await sender.waitForFunction(
     (deviceId) => {
       const api = window.__sharedropE2E
@@ -92,7 +111,7 @@ export async function connectPair(pair: ShareDropPair): Promise<void> {
     receiverDeviceId,
     { timeout: 30_000 },
   )
-  await waitForPeerVisible(receiver, 'My Android Phone')
+  await waitForPeerVisible(receiver, senderDisplayName)
 
   await sender.evaluate(async (deviceId) => {
     const api = window.__sharedropE2E
@@ -113,11 +132,38 @@ export async function connectPair(pair: ShareDropPair): Promise<void> {
     { timeout: 60_000 },
   )
 
-  await expect(sender.getByRole('heading', { name: /Connected to/i })).toBeVisible({
+  await expect(sender.getByRole('heading', { name: /Ready to send/i })).toBeVisible({
     timeout: 15_000,
   })
-  await expect(receiver.getByRole('heading', { name: /Connected to/i })).toBeVisible({
+  await expect(receiver.getByRole('heading', { name: /Ready to receive/i })).toBeVisible({
     timeout: 15_000,
+  })
+}
+
+/**
+ * Phase 12C primary path: homepage auto-discovery → tap Available now → Connected.
+ * Uses consumer UI for device selection (not the E2E connect API).
+ */
+export async function connectPairViaHomepageUi(pair: ShareDropPair): Promise<void> {
+  const { sender, receiver } = pair
+  await Promise.all([startNearbySend(sender), startNearbySend(receiver)])
+
+  const receiverName = await receiver.evaluate(() => window.__sharedropE2E!.getLocalDisplayName())
+  const senderDisplayName = await sender.evaluate(() =>
+    window.__sharedropE2E!.getLocalDisplayName(),
+  )
+  await waitForPeerVisible(sender, receiverName)
+  await waitForPeerVisible(receiver, senderDisplayName)
+
+  const nearby = sender.getByRole('list', { name: 'Nearby devices' })
+  await expect(nearby).toBeVisible({ timeout: 30_000 })
+  await nearby.getByRole('button', { name: new RegExp(receiverName, 'i') }).click()
+
+  await expect(sender.getByRole('heading', { name: /Ready to send/i })).toBeVisible({
+    timeout: 60_000,
+  })
+  await expect(receiver.getByRole('heading', { name: /Ready to receive/i })).toBeVisible({
+    timeout: 60_000,
   })
 }
 
@@ -140,11 +186,11 @@ export async function sendFiles(
     })),
   )
 
-  await expect(sender.getByText('Selected files')).toBeVisible()
-  await sender.getByRole('button', { name: 'Send', exact: true }).click()
+  await expect(sender.getByText('Ready to send')).toBeVisible()
+  await sender.getByRole('button', { name: /^Send$/i }).click()
 
   if (options?.waitForIncomingOnReceiver !== false) {
-    await expect(sender.getByText(/Waiting for My iPhone/i)).toBeVisible({ timeout: 15_000 })
+    await expect(sender.getByText(/Waiting for/i)).toBeVisible({ timeout: 15_000 })
   }
 }
 
@@ -154,8 +200,8 @@ export async function acceptOnReceiver(receiver: Page): Promise<void> {
 }
 
 export async function rejectOnReceiver(receiver: Page): Promise<void> {
-  await expect(receiver.getByRole('button', { name: 'Reject' })).toBeVisible({ timeout: 30_000 })
-  await receiver.getByRole('button', { name: 'Reject' }).click()
+  await expect(receiver.getByRole('button', { name: 'Decline' })).toBeVisible({ timeout: 30_000 })
+  await receiver.getByRole('button', { name: 'Decline' }).click()
 }
 
 export async function waitForTransferComplete(
@@ -163,7 +209,7 @@ export async function waitForTransferComplete(
   _role: 'sender' | 'receiver',
   timeout = 120_000,
 ): Promise<void> {
-  await expect(page.getByText(/Transfer complete/i)).toBeVisible({ timeout })
+  await expect(page.getByText(/successfully/i)).toBeVisible({ timeout })
 }
 
 export async function readReceivedSnapshots(page: Page): Promise<E2EReceivedFileSnapshot[]> {

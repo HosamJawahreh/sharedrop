@@ -81,9 +81,9 @@ test.describe('Phase 9 global connectivity diagnostics', () => {
 
         const started = Date.now()
         await pair.sender.locator('input[type="file"]').setInputFiles(filePath)
-        await expect(pair.sender.getByText('Selected files')).toBeVisible()
-        await pair.sender.getByRole('button', { name: 'Send', exact: true }).click()
-        await expect(pair.sender.getByText(/Waiting for My iPhone/i)).toBeVisible({
+        await expect(pair.sender.getByText('Ready to send')).toBeVisible()
+        await pair.sender.getByRole('button', { name: /^Send$/i }).click()
+        await expect(pair.sender.getByText(/Waiting for/i)).toBeVisible({
           timeout: 15_000,
         })
         await acceptOnReceiver(pair.receiver)

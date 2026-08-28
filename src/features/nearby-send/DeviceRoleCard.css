@@ -1,0 +1,158 @@
+.device-role-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.device-role-card--compact {
+  padding: var(--space-3) var(--space-4);
+}
+
+.device-role-card--orientation {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--color-surface) 65%, white);
+  box-shadow: none;
+}
+
+.device-role-card__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.device-role-card--compact .device-role-card__icon {
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 1.15rem;
+}
+
+.device-role-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.device-role-card__eyebrow {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.device-role-card__name {
+  color: var(--color-brand);
+  font-weight: 650;
+  font-size: var(--text-body);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.device-role-card__meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  line-height: 1.35;
+}
+
+.device-role-card__status {
+  color: var(--color-online);
+  font-weight: 600;
+}
+
+.device-pair-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 18rem;
+}
+
+.device-pair-visual__connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  color: color-mix(in srgb, var(--color-brand) 35%, transparent);
+  font-size: var(--text-meta);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.device-pair-visual__line {
+  width: 2px;
+  height: 1.25rem;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.device-pair-visual__arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.transfer-destination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) 0 var(--space-2);
+  text-align: center;
+}
+
+.transfer-destination__label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.transfer-incoming {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  text-align: center;
+}
+
+.transfer-incoming__lead {
+  margin: 0;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.transfer-incoming__summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-supporting);
+  line-height: 1.5;
+}
+
+.transfer-incoming__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 20rem;
+}

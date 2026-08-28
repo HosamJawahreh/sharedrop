@@ -97,4 +97,4 @@ npm run preview
 - Strict TypeScript
 - UI stays free of WebSocket/WebRTC/chunking details
 - Prefer browser platform APIs over extra dependencies
-- Keep the core workflow focused: Open → Send to nearby → Select device → Select files → Send
+- Keep the core workflow focused: Open → See available devices → Select device → Connect → Select files → Send

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loadConfig, isProductionEnv } from './config.js'
+import { loadConfig, isProductionEnv, resolveServerPort } from './config.js'
 import { OriginPolicyError, resolveAllowedOrigins } from './origin-policy.js'
 import { buildHealthPayload } from './health.js'
 
@@ -38,6 +38,12 @@ describe('production signaling configuration', () => {
     expect(() =>
       resolveAllowedOrigins('https://sharedrop.example/app', { isProduction: true }),
     ).toThrow(OriginPolicyError)
+  })
+
+  it('uses hosting PORT when SIGNALING_PORT is unset', () => {
+    expect(resolveServerPort({ PORT: '3000' })).toBe(3000)
+    expect(resolveServerPort({ SIGNALING_PORT: '9001', PORT: '3000' })).toBe(9001)
+    expect(resolveServerPort({})).toBe(8787)
   })
 
   it('loads tunable abuse limits from environment', () => {

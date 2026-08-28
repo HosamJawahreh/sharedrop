@@ -1,44 +1,96 @@
 /**
- * Consumer-facing connection copy. Never expose ICE/SDP/WebRTC jargon.
+ * Consumer-facing connection copy. Never expose ICE/SDP/WebRTC/TURN jargon.
  */
 
+import type { ConnectionState } from '@/core/connection'
+
+export type ConnectionUxPhase = 'waiting' | 'connecting' | 'connected' | 'failed' | 'disconnected'
+
+export type ConnectionIntentRole = 'offerer' | 'answerer' | null
+
+export function resolveConnectionUxPhase(connectionState: ConnectionState): ConnectionUxPhase {
+  if (connectionState === 'requesting') return 'waiting'
+  if (connectionState === 'connecting' || connectionState === 'disconnecting') return 'connecting'
+  if (connectionState === 'connected') return 'connected'
+  if (connectionState === 'failed') return 'failed'
+  if (connectionState === 'disconnected') return 'disconnected'
+  return 'connecting'
+}
+
+function isTimeoutMessage(message: string | null): boolean {
+  return message?.toLowerCase().includes('timed out') ?? false
+}
+
+function isOfflineMessage(message: string | null): boolean {
+  return message?.toLowerCase().includes('offline') ?? false
+}
+
+function isUnavailableMessage(message: string | null): boolean {
+  const lower = message?.toLowerCase() ?? ''
+  return (
+    lower.includes('no longer') ||
+    lower.includes('not available') ||
+    lower.includes('unavailable') ||
+    lower.includes('disconnected')
+  )
+}
+
 export function connectionTitle(
-  state: 'connecting' | 'connected' | 'failed' | 'disconnected',
+  phase: ConnectionUxPhase,
   deviceName: string,
   failureMessage: string | null,
+  role: ConnectionIntentRole = null,
 ): string {
-  if (state === 'connected') return `Connected to ${deviceName} ✓`
-  if (state === 'disconnected') return 'Connection lost'
-  if (state === 'failed') {
-    if (failureMessage?.toLowerCase().includes('timed out')) {
-      return 'Connection timed out'
-    }
-    if (failureMessage?.toLowerCase().includes('offline')) {
-      return 'Device went offline'
-    }
-    return 'Unable to connect'
+  if (phase === 'connected') {
+    if (role === 'answerer') return 'Ready to receive'
+    return 'Ready to send'
   }
-  return `Connecting to ${deviceName}…`
+  if (phase === 'disconnected') {
+    if (isUnavailableMessage(failureMessage)) {
+      return 'That device is no longer available.'
+    }
+    return 'Connection was lost.'
+  }
+  if (phase === 'failed') {
+    if (isTimeoutMessage(failureMessage)) {
+      return 'The connection took too long.'
+    }
+    if (isOfflineMessage(failureMessage)) {
+      return 'This device is currently offline.'
+    }
+    return `Couldn't connect to ${deviceName}.`
+  }
+  if (phase === 'waiting') return `Connecting to ${deviceName}`
+  return `Connecting to ${deviceName}`
 }
 
 export function connectionSubtitle(
-  state: 'connecting' | 'connected' | 'failed' | 'disconnected',
+  phase: ConnectionUxPhase,
+  deviceName: string,
   failureMessage: string | null,
+  role: ConnectionIntentRole = null,
 ): string | null {
-  if (state === 'connected') return null
-  if (state === 'disconnected') {
-    return 'The transfer was interrupted. Return to nearby devices to connect again.'
+  if (phase === 'connected') {
+    if (role === 'answerer') return `${deviceName} is connected`
+    return deviceName
   }
-  if (state === 'failed') {
-    if (failureMessage?.toLowerCase().includes('timed out')) {
-      return 'The device could not be reached in time.'
+  if (phase === 'disconnected') {
+    if (isUnavailableMessage(failureMessage)) {
+      return 'Find devices to try again.'
     }
-    if (failureMessage?.toLowerCase().includes('offline')) {
-      return 'That device is no longer available.'
-    }
-    return 'The device could not be reached.'
+    return 'Return to nearby devices to connect again.'
   }
-  return 'Connecting…'
+  if (phase === 'failed') {
+    if (isTimeoutMessage(failureMessage)) {
+      return 'Please try again.'
+    }
+    if (isOfflineMessage(failureMessage)) {
+      return 'That device is not available right now.'
+    }
+    return 'Check that ShareDrop is open on the other device, then try again.'
+  }
+  if (phase === 'waiting') return null
+  return null
 }
 
 export function transferFailureCopy(sessionState: 'failed' | 'cancelled'): {
@@ -48,11 +100,11 @@ export function transferFailureCopy(sessionState: 'failed' | 'cancelled'): {
   if (sessionState === 'cancelled') {
     return {
       title: 'Transfer cancelled',
-      hint: 'You can start a new transfer whenever you are ready.',
+      hint: 'You can send again whenever you are ready.',
     }
   }
   return {
-    title: 'Transfer failed',
-    hint: 'The file could not be transferred completely. Try again.',
+    title: "Couldn't send the file",
+    hint: 'Try again.',
   }
 }

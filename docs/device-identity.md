@@ -67,12 +67,15 @@ SavedDevice { deviceId, displayName, deviceType, platform, lastSeenAt, lastConne
 ### Behavior
 
 - Saved devices remain visible when offline
-- When presence rediscovers the same `deviceId`, status becomes **Online** without reload
-- Selecting an offline saved device does **not** start a connection
+- When presence rediscovers the same `deviceId`, status becomes **Online** without reload — including after network changes (Wi‑Fi → cellular → another country)
+- Display name / platform / `sessionId` may change; matching still uses `deviceId`
+- Selecting an offline saved device does **not** start a connection (“This device is currently offline.”)
 - Users can rename, remove, or **Forget saved devices**
 - Saved-device lists are **not** uploaded to the server
-- UI lists them under **Your devices** (online first) above **Nearby**
-- Connecting to a saved Online device always opens a fresh WebRTC session
+- UI lists them under **Your devices** (online first) above **Available now**
+- Connecting to a saved Online device always opens a fresh WebRTC session — same network or elsewhere
+- Offline saved devices show “This device is currently offline.” (no queued delivery)
+- Saved does **not** mean authenticated or trusted
 
 ## This device
 

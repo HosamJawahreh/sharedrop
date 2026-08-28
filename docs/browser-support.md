@@ -82,14 +82,14 @@ See [pwa-support.md](./pwa-support.md) and [device-identity.md](./device-identit
 | Background receiving while closed | **NOT SUPPORTED**      | **NOT SUPPORTED**         | **NOT SUPPORTED**                             |
 | WebRTC transfer                   | Supported              | **NOT TESTED** (physical) | **NOT TESTED** (physical)                     |
 
-Consumer UI says **available devices** / **Send to nearby** — never “Same Wi-Fi required.” Global connectivity is best-effort via WebRTC + configured ICE servers.
+Consumer UI says **Your devices** / **Available now** on the homepage — never “Same Wi-Fi required.” Global connectivity is best-effort via WebRTC + configured ICE servers.
 
 ## Phase 10 — Consumer UX
 
 | Capability                | Status                                                             |
 | ------------------------- | ------------------------------------------------------------------ |
 | Device name + type labels | Custom name + platform label (no IP / deviceId in UI)              |
-| Saved device priority     | **Your devices** above **Nearby**; online saved first              |
+| Saved device priority     | **Your devices** above **Available now**; online saved first       |
 | Desktop drag & drop       | Supported on the transfer file area                                |
 | Transfer progress         | Bytes, %, speed, ETA from actual throughput (throttled UI updates) |
 | Install message           | Exact: **Need Faster Transfer? Download To Your Device**           |
@@ -115,7 +115,7 @@ Physical multi-device UX validation remains **NOT TESTED** unless recorded in va
 
 Physical HTTPS/WSS/TURN relay and cross-country tests: see [phase-11-validation-report.md](./phase-11-validation-report.md).
 
-Consumer UI prefers **available devices** language. “Nearby” branding may remain, but discovery is **never** claimed to mean same Wi‑Fi.
+Consumer UI prefers **Your devices** / **Available now** language. Discovery is **never** claimed to mean same Wi‑Fi.
 
 ### Background receiving
 

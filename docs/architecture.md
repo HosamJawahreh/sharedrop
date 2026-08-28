@@ -7,28 +7,16 @@ ShareDrop is a browser-based peer-to-peer file transfer product.
 ## Frontend architecture
 
 ```text
-UI
+UI (HomeScreen / ConnectionScreen)
  │
  ▼
-Nearby Experience
+NearbySendProvider
  │
  ▼
-Discovery Engine
+DiscoveryEngine / ConnectionEngine / TransferEngine
  │
  ▼
-Session Engine
- │
- ▼
-Connection Engine
- │
- ▼
-Transfer Engine
- │
- ▼
-Transport Layer
- │
- ▼
-WebRTC DataChannel
+SignalingClient / WebRTC / DataChannel transport
 ```
 
 ### Layer rules
@@ -37,6 +25,9 @@ WebRTC DataChannel
 - Domain engines own **networking and transfer state**.
 - UI never imports `RTCPeerConnection`, ICE, signaling payloads, or chunking logic.
 - File contents are never stored in React state. Transfer code streams/chunks from `File` handles via `TransferEngine`.
+- The homepage starts discovery on mount and lists **Your devices** / **Available now** immediately — no intermediate “Send to nearby” step.
+- Saved Online devices use the same connection path as any available peer; ICE/TURN stay behind the connection layer.
+- Phase 12C keeps this boundary: consumer UX must not expose STUN, TURN, ICE, SDP, or DataChannel details.
 
 ### Source layout
 

@@ -122,19 +122,19 @@ Vite is configured with `host: true` in `vite.config.ts`, which binds to all int
 
 In development builds only (`import.meta.env.DEV`), the app shows diagnostics panels at the bottom of the screen:
 
-- **Discovery** — registration, heartbeat, nearby count
+- **Discovery** — registration, heartbeat, available-device count
 - **Connection** — ICE/WebRTC stats
 - **Transfer** — bytes, backpressure, throughput
 - **LAN readiness** — web app URL, signaling URL, readiness checklist
 
-Use **Run readiness check** after tapping **Send to nearby** to verify signaling registration.
+Use **Run readiness check** after the homepage has registered presence (discovery starts automatically).
 
 Readiness steps:
 
 1. Web app loaded
 2. Signaling connected
 3. Presence registered
-4. Nearby device visible (requires a second browser/device)
+4. Available device visible (requires a second browser/device)
 
 ---
 
@@ -145,8 +145,8 @@ Before mobile testing:
 1. Run `npm run dev:all`
 2. Open `http://localhost:5173` in Browser A
 3. Open `http://localhost:5173` in Browser B (separate profile/incognito helps)
-4. Both: **Send to nearby**
-5. Each should appear in the other's nearby list
+4. Both: open ShareDrop (devices appear automatically)
+5. Each should appear under the other's **Available now** (or **Your devices** if saved)
 6. Connect → select files → send → verify download + integrity
 
 Use dev diagnostics to confirm ICE candidate type and transfer throughput.
@@ -164,14 +164,17 @@ Use dev diagnostics to confirm ICE candidate type and transfer throughput.
 
 ### WebSocket connection fails
 
-- Verify signaling is running (`npm run dev:all`)
-- Open devtools → Network → WS on the phone; expect `ws://<lan-ip>:8787`
+- Verify signaling is running (`npm run dev:all` — **not** `npm run dev` alone)
+- On the laptop, confirm port 8787 is listening: `ss -tlnp | grep 8787` (expect `0.0.0.0:8787`)
+- Stop stale ShareDrop processes if port 5173 is already in use (`strictPort` prevents silent drift to 5174)
+- Open devtools → Network → WS on the phone; expect `ws://<lan-ip>:8787` (not `ws://localhost:8787`)
 - Check firewall allows inbound TCP **8787**
 - If using `SIGNALING_ALLOWED_ORIGINS`, include your LAN web origin or use `lan`/`*`
+- DEV: expand **LAN developer diagnostics** — **Signaling HTTP health** should show **Reachable**
 
 ### Devices don't see each other
 
-- Both devices must tap **Send to nearby** (discovery must be active)
+- Both devices must keep ShareDrop open (discovery starts on the homepage)
 - Both must reach the **same signaling server**
 - Check LAN readiness panel: presence registered on both sides
 - Background tabs on mobile may delay heartbeats — keep tabs active

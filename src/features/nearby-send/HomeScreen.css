@@ -1,33 +1,37 @@
 .home-screen {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   min-height: 100dvh;
-  padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right))
-    max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
-  overflow: hidden;
+  padding: max(var(--space-5), env(safe-area-inset-top))
+    max(var(--space-5), env(safe-area-inset-right)) max(var(--space-6), env(safe-area-inset-bottom))
+    max(var(--space-5), env(safe-area-inset-left));
+  overflow-x: hidden;
 }
 
 .home-screen__atmosphere {
   position: absolute;
-  inset: -20%;
+  inset: -18%;
+  overflow: hidden;
+  pointer-events: none;
   background:
     radial-gradient(
-      circle at 20% 20%,
-      color-mix(in srgb, var(--color-glow) 55%, transparent),
-      transparent 42%
+      circle at 18% 10%,
+      color-mix(in srgb, var(--color-glow) 48%, transparent),
+      transparent 44%
     ),
     radial-gradient(
-      circle at 80% 10%,
-      color-mix(in srgb, var(--color-accent) 22%, transparent),
-      transparent 36%
+      circle at 86% 6%,
+      color-mix(in srgb, var(--color-accent) 16%, transparent),
+      transparent 38%
     ),
     radial-gradient(
-      circle at 50% 90%,
-      color-mix(in srgb, var(--color-glow-soft) 70%, transparent),
-      transparent 45%
+      circle at 50% 100%,
+      color-mix(in srgb, var(--color-glow-soft) 55%, transparent),
+      transparent 48%
     );
-  animation: atmosphere-drift 14s ease-in-out infinite alternate;
+  animation: atmosphere-drift 16s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
@@ -36,91 +40,147 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: min(100%, 26rem);
-  text-align: center;
-  animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  align-items: stretch;
+  width: min(100%, var(--content-max));
+  animation: rise-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.home-screen__eyebrow {
-  margin: 0 0 0.85rem;
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.home-screen__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
 }
 
 .home-screen__brand {
   margin: 0;
   color: var(--color-brand);
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 12vw, 4.4rem);
+  font-size: var(--text-brand);
   font-weight: 700;
   line-height: 0.95;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
+}
+
+.home-screen__headline {
+  margin: var(--space-4) 0 0;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .home-screen__tagline {
-  margin: 1rem 0 2rem;
-  max-width: 18rem;
+  margin: 0;
+  max-width: 20rem;
   color: var(--color-text-muted);
-  font-size: 1.05rem;
+  font-size: var(--text-supporting);
   line-height: 1.45;
 }
 
-.home-screen__cta {
-  animation: cta-pulse 2.8s ease-in-out infinite;
+.home-screen__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  min-height: 1.4rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+}
+
+.home-screen__status-pulse {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent);
+  animation: status-pulse 1.6s ease-out infinite;
+}
+
+.home-screen__your-device {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  width: 100%;
+}
+
+.home-screen__your-device-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .home-screen__device {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  margin-top: 1.75rem;
+  gap: var(--space-1);
+  margin-top: var(--space-6);
 }
 
 .home-screen__device-label {
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--text-label);
   font-weight: 650;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .home-screen__device-name {
-  padding: 0.35rem 0.55rem;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   color: var(--color-brand);
   background: transparent;
   font: inherit;
   font-weight: 650;
   cursor: pointer;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
-  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  text-underline-offset: 0.22em;
 }
 
 .home-screen__device-name:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-accent) 55%, white);
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+.home-screen__devices {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+  width: 100%;
+  text-align: left;
+}
+
+.home-screen__section-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  line-height: 1.4;
 }
 
 @keyframes atmosphere-drift {
   from {
-    transform: translate3d(-1.5%, -1%, 0) scale(1);
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1);
   }
   to {
-    transform: translate3d(1.5%, 1.5%, 0) scale(1.04);
+    transform: translate3d(1.2%, 1.2%, 0) scale(1.03);
   }
 }
 
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -128,20 +188,28 @@
   }
 }
 
-@keyframes cta-pulse {
-  0%,
-  100% {
-    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-accent) 28%, transparent);
+@keyframes status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
-  50% {
-    box-shadow: 0 16px 34px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  70% {
+    box-shadow: 0 0 0 0.45rem transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-screen__content {
+    width: min(100%, 28rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-screen__atmosphere,
   .home-screen__content,
-  .home-screen__cta {
+  .home-screen__status-pulse {
     animation: none;
   }
 }

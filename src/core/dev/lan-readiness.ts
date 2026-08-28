@@ -14,14 +14,31 @@ export interface LanReadinessStepResult {
 export interface LanReadinessReport {
   signalingUrl: string
   webAppOrigin: string | null
+  signalingHealthReachable: boolean | null
   steps: readonly LanReadinessStepResult[]
   readyForDiscovery: boolean
   readyForPeerTesting: boolean
 }
 
+/** DEV helper: HTTP /health probe for the signaling host (does not open a WebSocket). */
+export async function probeSignalingHealth(signalingUrl: string): Promise<boolean> {
+  try {
+    const parsed = new URL(signalingUrl)
+    const protocol = parsed.protocol === 'wss:' ? 'https:' : 'http:'
+    const healthUrl = `${protocol}//${parsed.host}/health`
+    const response = await fetch(healthUrl, { method: 'GET', cache: 'no-store' })
+    if (!response.ok) return false
+    const body = (await response.json()) as { service?: string }
+    return body.service === 'sharedrop-signaling'
+  } catch {
+    return false
+  }
+}
+
 export function evaluateLanReadiness(input: {
   signalingUrl: string
   webAppOrigin: string | null
+  signalingHealthReachable?: boolean | null
   signalingState: 'disconnected' | 'connecting' | 'connected'
   discoveryState: DiscoveryState
   discoveryDiagnostics: DiscoveryDiagnostics | null
@@ -52,7 +69,7 @@ export function evaluateLanReadiness(input: {
           : 'fail',
       detail: input.discoveryDiagnostics?.registered
         ? 'Registered with signaling presence'
-        : 'Start “Send to nearby” to register presence',
+        : 'Open ShareDrop — discovery starts on the homepage',
     },
     {
       step: 'nearby_devices_visible',
@@ -73,6 +90,7 @@ export function evaluateLanReadiness(input: {
   return {
     signalingUrl: input.signalingUrl,
     webAppOrigin: input.webAppOrigin,
+    signalingHealthReachable: input.signalingHealthReachable ?? null,
     steps,
     readyForDiscovery,
     readyForPeerTesting,

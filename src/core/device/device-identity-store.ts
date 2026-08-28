@@ -1,7 +1,8 @@
 /** Local persistence for ShareDrop device identity (localStorage). */
 
 import { createId } from '@/utils/id'
-import { buildDefaultDisplayName, sanitizeDisplayName } from './display-name'
+import { buildDevicePresentation } from './device-presentation'
+import { sanitizeDisplayName } from './display-name'
 import type { ShareDropDeviceIdentity } from './identity-types'
 import { DEVICE_IDENTITY_STORAGE_KEY } from './identity-types'
 import type { DeviceType, Platform } from './types'
@@ -83,6 +84,7 @@ export interface CreateIdentityInput {
   deviceType: DeviceType
   platform: Platform
   browser: string
+  userAgent?: string
   displayName?: string
   isCustomName?: boolean
   now?: number
@@ -90,13 +92,17 @@ export interface CreateIdentityInput {
 
 export function createFreshIdentity(input: CreateIdentityInput): ShareDropDeviceIdentity {
   const now = input.now ?? Date.now()
-  const defaultName = buildDefaultDisplayName(input.platform, input.deviceType)
+  const presentation = buildDevicePresentation({
+    platform: input.platform,
+    deviceType: input.deviceType,
+    ...(input.userAgent ? { userAgent: input.userAgent } : {}),
+  })
   const custom = input.displayName !== undefined ? sanitizeDisplayName(input.displayName) : null
   const useCustom = Boolean(input.isCustomName && custom?.ok)
 
   return {
     deviceId: createId('dev'),
-    displayName: useCustom && custom?.ok ? custom.value : defaultName,
+    displayName: useCustom && custom?.ok ? custom.value : presentation.displayName,
     deviceType: input.deviceType,
     platform: input.platform,
     browser: input.browser.slice(0, 64),
@@ -158,16 +164,40 @@ export function loadOrCreateDeviceIdentity(
     return created
   }
 
-  const defaultName = buildDefaultDisplayName(env.platform, env.deviceType)
+  const presentation = buildDevicePresentation({
+    platform: existing.platform,
+    deviceType: existing.deviceType,
+    ...(env.userAgent ? { userAgent: env.userAgent } : {}),
+  })
   const next: ShareDropDeviceIdentity = {
     ...existing,
     deviceType: env.deviceType,
     platform: env.platform,
     browser: env.browser.slice(0, 64),
-    displayName: existing.isCustomName ? existing.displayName : defaultName,
+    displayName: existing.isCustomName ? existing.displayName : presentation.displayName,
     updatedAt: now,
   }
 
+  saveDeviceIdentity(next, storage)
+  return next
+}
+
+export function updateStoredDisplayNameFromPresentation(
+  displayName: string,
+  storage: DeviceIdentityStorage | null = defaultStorage(),
+): ShareDropDeviceIdentity | null {
+  const existing = loadDeviceIdentity(storage)
+  if (!existing) return null
+
+  const sanitized = sanitizeDisplayName(displayName)
+  if (!sanitized.ok) return null
+
+  const next: ShareDropDeviceIdentity = {
+    ...existing,
+    displayName: sanitized.value,
+    isCustomName: false,
+    updatedAt: Date.now(),
+  }
   saveDeviceIdentity(next, storage)
   return next
 }
@@ -192,16 +222,23 @@ export function updateStoredDisplayName(
   return next
 }
 
-/** Reset custom name back to the generated default for current platform/type. */
+/** Reset stored name to auto-detected presentation. */
 export function resetStoredDisplayName(
   storage: DeviceIdentityStorage | null = defaultStorage(),
 ): ShareDropDeviceIdentity | null {
   const existing = loadDeviceIdentity(storage)
   if (!existing) return null
 
+  const navUa = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+  const presentation = buildDevicePresentation({
+    platform: existing.platform,
+    deviceType: existing.deviceType,
+    ...(navUa ? { userAgent: navUa } : {}),
+  })
+
   const next: ShareDropDeviceIdentity = {
     ...existing,
-    displayName: buildDefaultDisplayName(existing.platform, existing.deviceType),
+    displayName: presentation.displayName,
     isCustomName: false,
     updatedAt: Date.now(),
   }
