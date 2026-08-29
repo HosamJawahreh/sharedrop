@@ -11,6 +11,7 @@ import { logOpsEvent } from './ops-log.js'
 import { PresenceStore } from './presence-store.js'
 import { RateLimiter } from './rate-limiter.js'
 import { buildHealthPayload } from './health.js'
+import { tryServeStatic } from './static-assets.js'
 
 function send(ws: WebSocket, message: ServerMessage): void {
   if (ws.readyState === ws.OPEN) {
@@ -157,6 +158,10 @@ function handleHttpRequest(
       'cache-control': 'no-store',
     })
     res.end(body)
+    return
+  }
+
+  if (tryServeStatic(req, res)) {
     return
   }
 

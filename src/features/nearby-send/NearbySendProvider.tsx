@@ -248,6 +248,8 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
   // Touch savedDeviceList so React re-renders when persistence subscribers fire.
   void savedDeviceList
 
+  // Exclude failed/connecting/reconnecting so the empty hint never masks a real outage
+  // or an in-progress search. `failed` remains a valid DiscoveryState — gated above.
   const showNoDevicesHint =
     (currentScreen === 'home' || currentScreen === 'nearby') &&
     nearbyDevices.length === 0 &&
@@ -255,10 +257,7 @@ export function NearbySendProvider({ children, stack }: NearbySendProviderProps)
     discoveryState !== 'failed' &&
     discoveryState !== 'connecting' &&
     discoveryState !== 'reconnecting' &&
-    (noDevicesTimerReady ||
-      (!isSearching(discoveryState) &&
-        discoveryState !== 'idle' &&
-        discoveryState !== 'failed'))
+    (noDevicesTimerReady || (!isSearching(discoveryState) && discoveryState !== 'idle'))
 
   const connectingDevice = useMemo(() => {
     if (!selectedDeviceId) return null

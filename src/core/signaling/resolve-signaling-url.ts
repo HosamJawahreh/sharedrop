@@ -14,11 +14,10 @@ function hostnameFromWebSocketUrl(url: string): string | null {
   }
 }
 
-function webSocketUrlForLocation(
-  location: Pick<Location, 'protocol' | 'hostname' | 'port'>,
-): string {
+function webSocketUrlForLocation(location: SignalingLocation): string {
   if (location.protocol === 'https:') {
-    return `wss://${location.hostname}/ws`
+    // Same-origin Node app (Hostinger): TLS + signaling on one host, no /ws path required.
+    return `wss://${location.hostname}`
   }
 
   if (import.meta.env.DEV || location.port === '4173') {
@@ -29,11 +28,16 @@ function webSocketUrlForLocation(
   return `ws://${location.hostname}:${DEFAULT_SIGNALING_PORT}`
 }
 
+/** Browser location fields used for signaling URL derivation (port optional). */
+export type SignalingLocation = Pick<Location, 'protocol' | 'hostname'> & {
+  port?: string
+}
+
 export interface ResolveSignalingUrlOptions {
   /** Explicit override (tests, VITE_SIGNALING_URL). */
   override?: string | undefined
   /** Browser location; defaults to globalThis.location when available. */
-  location?: Pick<Location, 'protocol' | 'hostname'> | undefined
+  location?: SignalingLocation | undefined
   /** Env value from import.meta.env.VITE_SIGNALING_URL */
   configuredUrl?: string | undefined
   /**
@@ -73,13 +77,13 @@ export function resolveSignalingUrl(options: ResolveSignalingUrlOptions = {}): s
       !isLoopbackHostname(location.hostname) &&
       isLoopbackHostname(hostnameFromWebSocketUrl(resolved) ?? '')
     ) {
-      return webSocketUrlForLocation(location as Pick<Location, 'protocol' | 'hostname' | 'port'>)
+      return webSocketUrlForLocation(location)
     }
     return resolved
   }
 
   if (location) {
-    return webSocketUrlForLocation(location as Pick<Location, 'protocol' | 'hostname' | 'port'>)
+    return webSocketUrlForLocation(location)
   }
 
   return `ws://localhost:${DEFAULT_SIGNALING_PORT}`
@@ -88,7 +92,7 @@ export function resolveSignalingUrl(options: ResolveSignalingUrlOptions = {}): s
 /** Reject non-WebSocket schemes so production never silently uses http(s) signaling URLs. */
 export function assertWebSocketUrl(
   raw: string,
-  location?: Pick<Location, 'protocol' | 'hostname'> | undefined,
+  location?: SignalingLocation | undefined,
 ): string {
   const trimmed = raw.trim()
   let parsed: URL
@@ -116,21 +120,16 @@ export function isProductionSignalingUrl(url: string): boolean {
   }
 }
 
-function getBrowserLocation(): Pick<Location, 'protocol' | 'hostname'> | undefined {
+function getBrowserLocation(): SignalingLocation | undefined {
   if (typeof window === 'undefined') return undefined
   return window.location
 }
 
 /** Current web app origin when running in a browser. */
 export function resolveWebAppOrigin(
-  location: Pick<Location, 'protocol' | 'hostname' | 'port'> | undefined = getFullBrowserLocation(),
+  location: SignalingLocation | undefined = getBrowserLocation(),
 ): string | null {
   if (!location) return null
   const port = location.port ? `:${location.port}` : ''
   return `${location.protocol}//${location.hostname}${port}`
-}
-
-function getFullBrowserLocation(): Pick<Location, 'protocol' | 'hostname' | 'port'> | undefined {
-  if (typeof window === 'undefined') return undefined
-  return window.location
 }

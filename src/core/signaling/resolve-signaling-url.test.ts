@@ -53,12 +53,12 @@ describe('resolveSignalingUrl', () => {
     ).toBe('ws://localhost:5173/ws')
   })
 
-  it('uses wss same-origin /ws path when page is served over https', () => {
+  it('uses wss same-origin root when page is served over https', () => {
     expect(
       resolveSignalingUrl({
         location: { protocol: 'https:', hostname: 'app.example.com' },
       }),
-    ).toBe('wss://app.example.com/ws')
+    ).toBe('wss://app.example.com')
   })
 
   it('rejects explicit ws:// when the page is HTTPS', () => {
